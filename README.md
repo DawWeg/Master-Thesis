@@ -1,7 +1,7 @@
 # Master-Thesis
-U - Unidirectional
-B - Bidirectional
-S - Scalar Modeling
-V - Vector Modeling
-O - Open Loop Detector
-C - Closed Loop Detector
+U - Unidirectional<br> 
+B - Bidirectional<br>
+S - Scalar Modeling<br>
+V - Vector Modeling<br>
+O - Open Loop Detector<br>
+C - Closed Loop Detector<br>
