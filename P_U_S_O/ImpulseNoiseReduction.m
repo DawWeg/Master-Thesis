@@ -1,19 +1,24 @@
-clear all;
-close all;
-clc;
-output_precision(9);
-max_recursion_depth(5);
-
-%%% Reading input samples
-filenames = ["../input_samples/Chopin_Etiuda_Op_25_nr_8.WAV"; "../input_samples/Chopin_Etiuda_Op_25_nr_9.WAV"; "../input_samples/Chopin_Etiuda_Op_25_nr_10.WAV"]; 
-[input_signal, sampling_frequency] = audioread(filenames(1,:));
-
+function [coefficients_trajectory, noise_variance_trajectory, detection_signal] = ImpulseNoiseReduction(input_signal)
 %%% Preparing variables
-global N = ceil(length(input_signal)/20);
-global AR_model_order = 5;
-global eps = 1e-9;
-lambda = 1;
-delta = 100;
+global N AR_model_order lambda lambda0 delta;
+covariance_matrix = delta*eye(AR_model_order);
+coefficients_trajectory = zeros(AR_model_order, N);
+regression_vector = zeros(AR_model_order, 1);
+noise_variance_trajectory = zeros(1, N);
+detection_signal = zeros(1, N);
+inv_lambda = 1/lambda;
 
-%%% Estimating model coefficients
+%%% Corrupted samples detection loop
+for t = 2:N
+    regression_vector = shift(regression_vector,1);
+    regression_vector(1) = input_signal(t-1);
+    temp = regression_vector'*covariance_matrix;
+    error = input_signal(t) - regression_vector'*coefficients_trajectory(:,t-1);
+    gain_vector = (covariance_matrix*regression_vector)/(lambda + temp*regression_vector);
+    covariance_matrix = inv_lambda*(covariance_matrix - gain_vector*temp);
+    coefficients_trajectory(:,t) = coefficients_trajectory(:,t-1) + gain_vector*error;
+    sigma = lambda/(lambda + temp*regression_vector);
+    noise_variance_trajectory(t) = lambda0*noise_variance_trajectory(t-1) + (1-lambda0)*error*error*sigma;
+endfor
 
+endfunction
