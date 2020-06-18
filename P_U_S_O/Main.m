@@ -16,6 +16,7 @@ global lambda = 0.999;
 global delta = 100;
 global lambda0 = 0.998;
 global mu = 4;
+global max_block_length = 20;
 
 %%% Reducing impulse noise
 %dbstop("ImpulseNoiseReduction");
