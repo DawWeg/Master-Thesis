@@ -2,7 +2,7 @@ clear all;
 close all;
 clc;
 output_precision(9);
-max_recursion_depth(5);
+max_recursion_depth(10);
 
 %%% Reading input samples
 filenames = ["../input_samples/Chopin_Etiuda_Op_25_nr_8.WAV"; "../input_samples/Chopin_Etiuda_Op_25_nr_9.WAV"; "../input_samples/Chopin_Etiuda_Op_25_nr_10.WAV"; "../input_samples/12.wav"]; 
@@ -19,7 +19,7 @@ global mu = 4;
 global max_block_length = 20;
 
 %%% Reducing impulse noise
-%dbstop("ImpulseNoiseReduction");
+dbstop("ImpulseNoiseReduction");
 [coefficients_trajectory, noise_variance_trajectory, detection_signal] = ImpulseNoiseReduction(input_signal(1:N));
 
 %%% Printing results
@@ -47,3 +47,6 @@ plot(coefficients_trajectory(10,:));
 
 figure(2);
 plot(noise_variance_trajectory);
+
+figure(3);
+plot(detection_signal);
