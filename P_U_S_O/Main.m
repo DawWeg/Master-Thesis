@@ -7,14 +7,14 @@ max_recursion_depth(10);
 %%% Reading input samples
 filenames = ["../input_samples/Chopin_Etiuda_Op_25_nr_8.WAV"; "../input_samples/Chopin_Etiuda_Op_25_nr_9.WAV"; "../input_samples/Chopin_Etiuda_Op_25_nr_10.WAV"; "../input_samples/12.wav"]; 
 [input_signal, sampling_frequency] = audioread(filenames(4,:));
-
+%input_signal = input_signal(:,1);
 %%% Preparing variables
-global N = ceil(length(input_signal)/1);
+global N = ceil(length(input_signal)/5);
 global AR_model_order = 10;
 global eps = 1e-9;
-global lambda = 0.999;
+global lambda = 0.9999;
 global delta = 100;
-global lambda0 = 0.998;
+global lambda0 = 0.9998;
 global mu = 4;
 global max_block_length = 50;
 global delay = 100;
@@ -22,6 +22,9 @@ global delay = 100;
 %%% Reducing impulse noise
 %dbstop("ImpulseNoiseReduction");
 [coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal] = ImpulseNoiseReduction(input_signal(1:N));
+
+%%% Writing output file
+audiowrite("../output_samples/P_U_S_O.wav", clear_signal, sampling_frequency);
 
 %%% Printing results
 figure(1);
