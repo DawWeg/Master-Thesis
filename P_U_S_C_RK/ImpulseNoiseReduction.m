@@ -28,41 +28,45 @@ for t = 2:N
     endif
     % Checking if the sample is corrupted
     if(abs(error) > mu*sqrt(noise_variance_trajectory(t-1)))
-      % TODO Check the stability of a model
       % If the sample is corrupted alarm is raised.
       % We check the model stability, and if it's not stable we use Levinson-Durbin
       % algorithm to make sure that it is.
-      %dbstop("CheckStability");
+      % TODO Levinson-Durbin algorithm
       if(!CheckStability(coefficients_trajectory(:,t-1)))
         disp("Model unstable");     
       endif    
       detection_signal(t) = 1;
       block_start_index = t;
-      block_end_index = t;
-      prediction_regression_vector = clear_signal(t+1:-1:t-AR_model_order+2);
+      kalman_state_vector = clear_signal(t-1:-1:t-1-AR_model_order+1);
+      kalman_covariance_matrix = zeros(AR_model_order);
+      kalman_coefficients = coefficients_trajectory(:,t-1);
       end_condition = 0;
-      prediction_noise_variance = noise_variance_trajectory(t-1);
-      f = 0;
-      for i = 1:(max_block_length-1)
-        % Starting open loop detection process:
-        %   * calculating i-th prediction errors
-        %   * calculating i-th noise_variance prediction using Stoica algorithm
-        %   * deciding if given sample is corrupted 
-        prediction_regression_vector = shift(prediction_regression_vector,1);
-        prediction_regression_vector(1) = clear_signal(t+i-1);
-        prediction_error = input_signal(t+i) - coefficients_trajectory(:,t-1)'*prediction_regression_vector;
-        [prediction_noise_variance, f] = Stoica(prediction_noise_variance, noise_variance_trajectory(t-1), coefficients_trajectory(:,t-1), i+1, f);
-        if(abs(prediction_error) > mu*sqrt(prediction_noise_variance))
+      for i = 0:(max_block_length-1)
+        % Starting closed loop detection process:
+        %   * using variable order Kalman filter to decide on whether the sample is corrupted
+        kalman_output_prediction = kalman_coefficients'*kalman_state_vector;
+        kalman_error = input_signal(t+i) - kalman_output_prediction;
+        kalman_state_vector = [kalman_output_prediction; kalman_state_vector];
+        kalman_h = kalman_covariance_matrix*kalman_coefficients;
+        kalman_noise_variance = kalman_coefficients'*kalman_h + noise_variance_trajectory(t-1);
+        kalman_covariance_matrix = [kalman_noise_variance, kalman_h'; kalman_h, kalman_covariance_matrix];
+        kalman_coefficients = [kalman_coefficients; 0];        
+        if(abs(kalman_error) > mu*sqrt(kalman_noise_variance))
           detection_signal(t+i) = 1;
-        elseif(max(detection_signal(t+i-AR_model_order+1:1:t+i)) == 0)
+        else
+          kalman_l = (1/kalman_noise_variance)*kalman_covariance_matrix(:,1);
+          kalman_state_vector = kalman_state_vector + kalman_l*kalman_error;
+          kalman_covariance_matrix = kalman_covariance_matrix - kalman_noise_variance*kalman_l*kalman_l';
+        endif        
+        if(max(detection_signal(t+i-AR_model_order+1:1:t+i)) == 0)
           % If last 5 samples are deemed uncorrupted we:
           %   * fill the whole block from beginning till the end in the detection signal with ones
           %   * interpolate corrupted fragment using Kalman filter
           %   * go back to the sample prior to the detection alarm and continue
-          m = t + i - block_start_index - AR_model_order;
+          m = i - AR_model_order + 1;
           q = 2*AR_model_order + m;
           detection_signal(block_start_index:block_start_index+m) = 1;
-          clear_signal(block_start_index:t+i-AR_model_order-1) = RecursiveInterpolation(     ...
+          clear_signal(block_start_index:t+i-AR_model_order) = RecursiveInterpolation(     ...
                   clear_signal(block_start_index-q:t+i), m, q, coefficients_trajectory(:,t), ...
                   noise_variance_trajectory(t-1));          
           t = t-1;
@@ -78,7 +82,8 @@ for t = 2:N
           clear_signal(block_start_index:t+max_block_length) = RecursiveInterpolation(     ...
                   clear_signal(block_start_index-q:t+max_block_length+AR_model_order), m, q, coefficients_trajectory(:,t), ...
                   noise_variance_trajectory(t-1));
-          t = t-1;          
+          t = t-1;
+          break;          
         endif                
       endfor 
     endif

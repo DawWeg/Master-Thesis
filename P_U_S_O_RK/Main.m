@@ -24,7 +24,7 @@ global delay = 100;
 [coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal] = ImpulseNoiseReduction(input_signal(1:N));
 
 %%% Writing output file
-audiowrite("../output_samples/P_U_S_O.wav", clear_signal, sampling_frequency);
+audiowrite("../output_samples/P_U_S_O_RK.wav", clear_signal, sampling_frequency);
 
 %%% Printing results
 figure(1);
