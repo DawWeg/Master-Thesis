@@ -9,12 +9,12 @@ filenames = ["../input_samples/Chopin_Etiuda_Op_25_nr_8.WAV"; "../input_samples/
 [input_signal, sampling_frequency] = audioread(filenames(4,:));
 %input_signal = input_signal(:,1);
 %%% Preparing variables
-global N = ceil(length(input_signal)/5);
+global N = ceil(length(input_signal)/10);
 global AR_model_order = 10;
 global eps = 1e-9;
-global lambda = 0.9999;
+global lambda = 0.999;
 global delta = 100;
-global lambda0 = 0.9998;
+global lambda0 = 0.998;
 global mu = 4;
 global max_block_length = 50;
 global delay = 100;
