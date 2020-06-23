@@ -15,7 +15,7 @@ for t = 2:N
     regression_vector = shift(regression_vector,1);
     regression_vector(1) = clear_signal(t-1);
     temp = regression_vector'*covariance_matrix;
-    error = input_signal(t) - regression_vector'*coefficients_trajectory(:,t-1);
+    error = clear_signal(t) - regression_vector'*coefficients_trajectory(:,t-1);
     gain_vector = (covariance_matrix*regression_vector)/(lambda + temp*regression_vector);
     covariance_matrix = inv_lambda*(covariance_matrix - gain_vector*temp);
     coefficients_trajectory(:,t) = coefficients_trajectory(:,t-1) + gain_vector*error;
@@ -38,7 +38,7 @@ for t = 2:N
       detection_signal(t) = 1;
       block_start_index = t;
       block_end_index = t;
-      prediction_regression_vector = clear_signal(t+1:-1:t-AR_model_order+2);
+      prediction_regression_vector = regression_vector;
       end_condition = 0;
       prediction_noise_variance = noise_variance_trajectory(t-1);
       f = 0;
@@ -49,12 +49,12 @@ for t = 2:N
         %   * deciding if given sample is corrupted 
         prediction_regression_vector = shift(prediction_regression_vector,1);
         prediction_regression_vector(1) = clear_signal(t+i-1);
-        prediction_error = input_signal(t+i) - coefficients_trajectory(:,t-1)'*prediction_regression_vector;
+        prediction_error = clear_signal(t+i) - coefficients_trajectory(:,t-1)'*prediction_regression_vector;
         [prediction_noise_variance, f] = Stoica(prediction_noise_variance, noise_variance_trajectory(t-1), coefficients_trajectory(:,t-1), i+1, f);
         if(abs(prediction_error) > mu*sqrt(prediction_noise_variance))
           detection_signal(t+i) = 1;
         endif        
-        if(max(detection_signal(t+i-AR_model_order+1:1:t+i)) == 0)
+        if(max(detection_signal(t+i-AR_model_order+1:t+i)) == 0)
           % If last 5 samples are deemed uncorrupted we:
           %   * fill the whole block from beginning till the end in the detection signal with ones
           %   * interpolate corrupted fragment using Kalman filter
@@ -62,7 +62,7 @@ for t = 2:N
           m = t + i - block_start_index - AR_model_order;
           q = 2*AR_model_order + m;
           detection_signal(block_start_index:block_start_index+m) = 1;
-          clear_signal(block_start_index:t+i-AR_model_order-1) = RecursiveInterpolation(     ...
+          clear_signal(block_start_index:block_start_index+m-1) = RecursiveInterpolation(     ...
                   clear_signal(block_start_index-q:t+i), m, q, coefficients_trajectory(:,t-1), ...
                   noise_variance_trajectory(t-1));          
           t = t-1;
@@ -74,9 +74,9 @@ for t = 2:N
           %   * go back to the sample prior to the detection alarm and continue 
           m = max_block_length;
           q = 2*AR_model_order + m;
-          detection_signal(block_start_index:t+max_block_length) = 1;
+          detection_signal(block_start_index:t+max_block_length-1) = 1;
           clear_signal(block_start_index:t+max_block_length) = RecursiveInterpolation(     ...
-                  clear_signal(block_start_index-q:t+max_block_length+AR_model_order), m, q, coefficients_trajectory(:,t), ...
+                  clear_signal(block_start_index-q:t+max_block_length+AR_model_order), m, q, coefficients_trajectory(:,t-1), ...
                   noise_variance_trajectory(t-1));
           t = t-1;          
         endif                
