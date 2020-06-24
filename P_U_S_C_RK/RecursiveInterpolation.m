@@ -1,6 +1,6 @@
 function [interpolated_samples] = RecursiveInterpolation (input_signal, m, q, model_coefficients, noise_variance)
 %%% Preparing variables
-global AR_model_order;
+global AR_model_order decimal_place;
 state_vector = input_signal(q:-1:1);
 transition_matrix = [[model_coefficients', zeros(1, q-AR_model_order)]; eye(q-1,q)];
 output_vector = [1; zeros(q-1,1)];

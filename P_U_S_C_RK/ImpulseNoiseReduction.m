@@ -1,6 +1,6 @@
- function [coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal] = ImpulseNoiseReduction(input_signal)
+ function [coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal, error_trajectory, error_threshold] = ImpulseNoiseReduction(input_signal)
 %%% Preparing variables
-global N AR_model_order lambda lambda0 delta mu max_block_length delay;
+global N AR_model_order lambda lambda0 delta mu max_block_length delay eps decimal_place;
 clear_signal = input_signal;
 covariance_matrix = delta*eye(AR_model_order);
 coefficients_trajectory = zeros(AR_model_order, N);
@@ -8,26 +8,30 @@ regression_vector = zeros(AR_model_order, 1);
 noise_variance_trajectory = zeros(1, N);
 detection_signal = zeros(1, N);
 inv_lambda = 1/lambda;
+error_trajectory = zeros(1, N);
+error_threshold = zeros(1, N);
 
 %%% Corrupted samples detection loop
 for t = 2:N
     % Estimating model parameters using weighted recursive least squares algorithm
-    regression_vector = shift(regression_vector,1);
+    regression_vector = [ 0; regression_vector(2:end) ];
+%    shift(regression_vector,1);
     regression_vector(1) = clear_signal(t-1);
     temp = regression_vector'*covariance_matrix;
-    error = input_signal(t) - regression_vector'*coefficients_trajectory(:,t-1);
+    error_trajectory(t) = clear_signal(t) - regression_vector'*coefficients_trajectory(:,t-1);
     gain_vector = (covariance_matrix*regression_vector)/(lambda + temp*regression_vector);
     covariance_matrix = inv_lambda*(covariance_matrix - gain_vector*temp);
-    coefficients_trajectory(:,t) = coefficients_trajectory(:,t-1) + gain_vector*error;
+    coefficients_trajectory(:,t) = coefficients_trajectory(:,t-1) + gain_vector*error_trajectory(t);
     sigma = lambda/(lambda + temp*regression_vector);
-    noise_variance_trajectory(t) = lambda0*noise_variance_trajectory(t-1) + (1-lambda0)*error*error*sigma;
+    noise_variance_trajectory(t) = lambda0*noise_variance_trajectory(t-1) + (1-lambda0)*error_trajectory(t)*error_trajectory(t)*sigma;
+    error_threshold(t) = mu*sqrt(noise_variance_trajectory(t-1));
     % Condition lets coefficient estimates to be more accurate before
     % deciding on quality of a sample
     if(t < delay)
       continue;
     endif
     % Checking if the sample is corrupted
-    if(abs(error) > mu*sqrt(noise_variance_trajectory(t-1)))
+    if(abs(error_trajectory(t)) > error_threshold(t))
       % If the sample is corrupted alarm is raised.
       % We check the model stability, and if it's not stable we use Levinson-Durbin
       % algorithm to make sure that it is.
@@ -41,7 +45,7 @@ for t = 2:N
       kalman_state_vector = clear_signal(t:-1:t-AR_model_order+1);
       kalman_covariance_matrix = zeros(AR_model_order);
       kalman_coefficients = coefficients_trajectory(:,t-1);
-      for i = 1:(max_block_length-1)
+      for i = 1:(max_block_length+AR_model_order-1)
         % Starting closed loop detection process:
         %   * using variable order Kalman filter to decide on whether the sample is corrupted
         kalman_output_prediction = kalman_coefficients'*kalman_state_vector;
@@ -56,9 +60,9 @@ for t = 2:N
           kalman_state_vector = kalman_state_vector;
           kalman_covariance_matrix = kalman_covariance_matrix;
         else
-          kalman_l = (1/kalman_noise_variance)*kalman_covariance_matrix(:,1);
-          kalman_state_vector = kalman_state_vector + kalman_l*kalman_error;
-          kalman_covariance_matrix = kalman_covariance_matrix - kalman_noise_variance*kalman_l*kalman_l';
+          kalman_l = mRound(decimal_place,(1/kalman_noise_variance)*kalman_covariance_matrix(:,1));         
+          kalman_state_vector = mRound(decimal_place, (kalman_state_vector + kalman_l*kalman_error));
+          kalman_covariance_matrix = mRound(decimal_place, (kalman_covariance_matrix - kalman_noise_variance*kalman_l*kalman_l'));
           if(max(detection_signal(t+i-AR_model_order+1:t+i)) != 0)
             false_positive = 1;
           endif          
@@ -70,7 +74,7 @@ for t = 2:N
           %   * go back to the sample prior to the detection alarm and continue
           m = t + i - block_start_index - AR_model_order;
           q = 2*AR_model_order + m;
-          detection_signal(block_start_index:block_start_index+m) = 1;
+          detection_signal(block_start_index:block_start_index+m-1) = 1;
           if(!false_positive)
             clear_signal(block_start_index:block_start_index+m-1) = flip(kalman_state_vector(AR_model_order+1:AR_model_order+m));
             t = t-1;
@@ -82,7 +86,7 @@ for t = 2:N
                   noise_variance_trajectory(t-1));          
           t = t-1;
           break;
-        elseif(i == max_block_length)
+        elseif(i >= max_block_length)
           % If we reached max block length we:
           %   * fill the whole block with ones in the detection signal
           %   * interpolate whole block 
@@ -91,7 +95,7 @@ for t = 2:N
           q = 2*AR_model_order + max_block_length;
           detection_signal(block_start_index:t+i) = 1;
           clear_signal(block_start_index:t+max_block_length-1) = RecursiveInterpolation(     ...
-                  clear_signal(block_start_index-q:t+max_block_length+AR_model_order), max_block_length, q, coefficients_trajectory(:,t-1), ...
+                  clear_signal(block_start_index-q:t+max_block_length+AR_model_order-1), max_block_length, q, coefficients_trajectory(:,t-1), ...
                   noise_variance_trajectory(t-1));
           t = t-1;
           break;          
