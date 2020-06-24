@@ -13,15 +13,16 @@ global N = ceil(length(input_signal)/10);
 global AR_model_order = 10;
 global eps = 1e-9;
 global lambda = 0.999;
-global delta = 100;
+global delta = 1000;
 global lambda0 = 0.998;
 global mu = 4;
 global max_block_length = 50;
-global delay = 100;
+global delay = 10*AR_model_order;
+global decimal_place = 12;
 
 %%% Reducing impulse noise
-%dbstop("ImpulseNoiseReduction");
-[coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal] = ImpulseNoiseReduction(input_signal(1:N));
+dbstop("ImpulseNoiseReduction");
+[coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal, error_trajectory, error_threshold] = ImpulseNoiseReduction(input_signal(1:N));
 
 %%% Writing output file
 audiowrite("../output_samples/P_U_S_O_RK.wav", clear_signal, sampling_frequency);
@@ -50,8 +51,15 @@ subplot(5,2,10);
 plot(coefficients_trajectory(10,:));
 
 figure(2);
+subplot(3,1,1);
+plot(abs(error_trajectory));
+hold on;
+plot(error_threshold, 'r');
+hold off;
+subplot(3,1,2);
+plot(detection_signal);
+subplot(3,1,3);
 plot(noise_variance_trajectory);
-
 figure(3);
 subplot(3,1,1);
 plot(input_signal(1:N));
