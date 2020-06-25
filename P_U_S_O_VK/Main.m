@@ -9,7 +9,7 @@ filenames = ["../input_samples/Chopin_Etiuda_Op_25_nr_8.WAV"; "../input_samples/
 [input_signal, sampling_frequency] = audioread(filenames(4,:));
 %input_signal = input_signal(:,1);
 %%% Preparing variables
-global N = ceil(length(input_signal)/1);
+global N = ceil(length(input_signal)/10);
 global AR_model_order = 10;
 global eps = 1e-9;
 global lambda = 0.999;
@@ -22,9 +22,9 @@ global delay = 100;
 %%% Reducing impulse noise
 %dbstop("ImpulseNoiseReduction");
 tic;
-[coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal] = ImpulseNoiseReduction(input_signal(1:N));
+[coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal, error_trajectory, error_threshold] = ImpulseNoiseReduction(input_signal(1:N));
 time = toc;
-printf("Procedure time: %d", time);; 
+printf("Procedure time: %d s.", time);
 
 %%% Writing output file
 audiowrite("../output_samples/P_U_S_O_VK.wav", clear_signal, sampling_frequency);
@@ -53,6 +53,14 @@ subplot(5,2,10);
 plot(coefficients_trajectory(10,:));
 
 figure(2);
+subplot(3,1,1);
+plot(abs(error_trajectory));
+hold on;
+plot(error_threshold, 'r');
+hold off;
+subplot(3,1,2);
+plot(detection_signal);
+subplot(3,1,3);
 plot(noise_variance_trajectory);
 
 figure(3);

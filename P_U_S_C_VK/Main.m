@@ -15,17 +15,20 @@ global eps = 1e-9;
 global lambda = 0.999;
 global delta = 1000;
 global lambda0 = 0.998;
-global mu = 5;
-global max_block_length = 100;
+global mu = 5.5
+global max_block_length = 50;
 global delay = 100;
 global decimal_place = 12;
 
 %%% Reducing impulse noise
-dbstop("ImpulseNoiseReduction");
+%dbstop("ImpulseNoiseReduction");
+tic;
 [coefficients_trajectory, noise_variance_trajectory, detection_signal, clear_signal, error_trajectory, error_threshold] = ImpulseNoiseReduction(input_signal(1:N));
+time = toc;
+printf("Procedure time: %d s.", time);
 
 %%% Writing output file
-audiowrite("../output_samples/P_U_S_C_RK.wav", clear_signal, sampling_frequency);
+audiowrite("../output_samples/P_U_S_C_VK.wav", clear_signal, sampling_frequency);
 
 %%% Printing results
 figure(1);
@@ -52,6 +55,17 @@ plot(coefficients_trajectory(10,:));
 
 figure(2);
 subplot(3,1,1);
+plot(abs(error_trajectory));
+hold on;
+plot(error_threshold, 'r');
+hold off;
+subplot(3,1,2);
+plot(detection_signal);
+subplot(3,1,3);
+plot(noise_variance_trajectory);
+
+figure(3);
+subplot(3,1,1);
 plot(input_signal(1:N));
 %axis([33660 33700]);
 subplot(3,1,2);
@@ -60,18 +74,5 @@ plot(detection_signal);
 subplot(3,1,3);
 plot(clear_signal);
 %axis([33660 33700]);
-
-figure(3);
-subplot(3,1,1);
-plot(abs(error_trajectory));
-axis([0 N-1]);
-hold on;
-plot(error_threshold, 'r');
-hold off;
-subplot(3,1,2);
-plot(detection_signal);
-axis([0 N-1]);
-subplot(3,1,3);
-plot(noise_variance_trajectory);
 
 

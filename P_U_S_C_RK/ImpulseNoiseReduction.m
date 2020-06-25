@@ -14,19 +14,10 @@ error_threshold = zeros(1, N);
 %%% Corrupted samples detection loop
 for t = 2:N
     % Estimating model parameters using weighted recursive least squares algorithm
-    regression_vector = [ 0; regression_vector(2:end) ];
-%    shift(regression_vector,1);
-    regression_vector(1) = clear_signal(t-1);
-    temp = regression_vector'*covariance_matrix;
-    error_trajectory(t) = clear_signal(t) - regression_vector'*coefficients_trajectory(:,t-1);
-    gain_vector = (covariance_matrix*regression_vector)/(lambda + temp*regression_vector);
-    covariance_matrix = inv_lambda*(covariance_matrix - gain_vector*temp);
-    coefficients_trajectory(:,t) = coefficients_trajectory(:,t-1) + gain_vector*error_trajectory(t);
-    sigma = lambda/(lambda + temp*regression_vector);
-    noise_variance_trajectory(t) = lambda0*noise_variance_trajectory(t-1) + (1-lambda0)*error_trajectory(t)*error_trajectory(t)*sigma;
+    regression_vector = [clear_signal(t-1); regression_vector(1:end-1)];
+    [coefficients_trajectory(:,t), noise_variance_trajectory(t), error_trajectory(t), covariance_matrix] = ...
+      EWLS_Step(regression_vector, covariance_matrix, clear_signal(t), coefficients_trajectory(:,t-1), noise_variance_trajectory(t-1));
     error_threshold(t) = mu*sqrt(noise_variance_trajectory(t-1));
-    % Condition lets coefficient estimates to be more accurate before
-    % deciding on quality of a sample
     if(t < delay)
       continue;
     endif
@@ -49,7 +40,7 @@ for t = 2:N
         % Starting closed loop detection process:
         %   * using variable order Kalman filter to decide on whether the sample is corrupted
         kalman_output_prediction = kalman_coefficients'*kalman_state_vector;
-        kalman_error = input_signal(t+i) - kalman_output_prediction;
+        kalman_error = clear_signal(t+i) - kalman_output_prediction;
         kalman_state_vector = [kalman_output_prediction; kalman_state_vector];
         kalman_h = kalman_covariance_matrix*kalman_coefficients;
         kalman_noise_variance = kalman_coefficients'*kalman_h + noise_variance_trajectory(t-1);
@@ -86,7 +77,7 @@ for t = 2:N
                   noise_variance_trajectory(t-1));          
           t = t-1;
           break;
-        elseif(i >= max_block_length)
+        elseif(i >= (max_block_length-AR_model_order))
           % If we reached max block length we:
           %   * fill the whole block with ones in the detection signal
           %   * interpolate whole block 
@@ -102,6 +93,9 @@ for t = 2:N
         endif                
       endfor 
     endif
+    if(mod(t,1000) == 0)
+      printf("[%*d|100]\n", 3, round((t/N)*100));
+    endif
 endfor
-
+disp("[100|100]");
 endfunction
