@@ -33,12 +33,16 @@ disp("Right-side analysis");
   r_error_threshold] = ImpulseNoiseReduction(flip(input_signal(1:N)));
 time = toc;
 disp("Bidirectional analysis");
-[lr_detection_signal, lr_clear_signal] = BidirectionalAnalysis(
+[lr_detection_signal, lr_clear_signal, lrl_clear_signal, lrr_clear_signal] = BidirectionalAnalysis(l_detection_signal, r_detection_signal);
 printf("Procedure time: %d s.", time);
 
 %%% Writing output file
 audiowrite("../output_samples/P_B_S_O_RK_LEFT.wav", l_clear_signal, sampling_frequency);
 audiowrite("../output_samples/P_B_S_O_RK_RIGHT.wav", flip(r_clear_signal), sampling_frequency);
+audiowrite("../output_samples/P_B_S_O_RK_BI.wav", lr_clear_signal, sampling_frequency);
+audiowrite("../output_samples/P_B_S_O_RK_BI_LEFT.wav", lrl_clear_signal, sampling_frequency);
+audiowrite("../output_samples/P_B_S_O_RK_BI_RIGHT.wav", lrr_clear_signal, sampling_frequency);
+
 
 %%% Printing results
 figure(1);
