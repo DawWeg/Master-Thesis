@@ -1,6 +1,6 @@
 function [lr_detection_signal, lr_clear_signal, lrl_clear_signal, lrr_clear_signal] = BidirectionalAnalysis(l_detection_signal, r_detection_signal)
 %%% Preparing variables
-global N alarm_expand AR_model_order;
+global N alarm_expand AR_model_order max_block_length;
 lr_detection_signal = zeros(1, N);
 lr_clear_signal = zeros(1, N);
 lrl_clear_signal = zeros(1, N);
@@ -21,7 +21,23 @@ for t = 2:N
 endfor
 disp("[100|100]");
 
-%%% Creating bidirectional alarm_expand
+%%% Creating bidirectional alarm
 disp("Creating bidirectional alarm");
+for t = 2:N
+  if((l_detection_signal(t) == 1 && l_detection_signal(t-1) == 0) || (r_detection_signal(t) == 1 && r_detection_signal(t-1) == 0))
+    block_start_index = t - AR_model_order;
+    for i = 1:max_block_length
+      if(!any(l_detection_signal(t+i:t+i+AR_model_order-1)) && !any(r_detection_signal(t+i:t+i+AR_model_order-1)))
+        block_end_index = t+i+AR_model_order - 1;
+        lr_detection_signal(block_start_index:block_end_index) = AnalyzeBlock(l_detection_signal(block_start_index:block_end_index), r_detection_signal(block_start_index:block_end_index));
+        t = block_end_index + 1;
+        break;
+      endif
+    endfor      
+  endif
+  if(mod(t,1000) == 0)
+      printf("[%3.1f|100]\n", (t/N)*100);
+  endif
+endfor
 disp("[100|100]");
 endfunction
