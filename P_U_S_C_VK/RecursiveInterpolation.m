@@ -16,7 +16,7 @@ for t = q+1:q+m+AR_model_order
   else
     error = input_signal(t) - output_vector'*state_vector;
     g = output_vector'*covariance_matrix*output_vector;
-    l = mRound(decimal_place, (covariance_matrix*output_vector)/g);;
+    l = (covariance_matrix*output_vector)/g;
     state_vector = state_vector + l*error;
     covariance_matrix = covariance_matrix - g*l*l';
   endif

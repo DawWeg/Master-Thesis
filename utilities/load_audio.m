@@ -1,4 +1,4 @@
-function [samples, frequency, samples_count] = load_audio(filename, start_seconds, end_seconds)
+function [samples, frequency] = load_audio(filename, start_seconds, end_seconds)
   [samples, frequency] = audioread(strcat(["input_samples/", filename]));
   sample_time = 1/frequency;
   start_sample = (start_seconds/sample_time) + 1;
@@ -10,5 +10,4 @@ function [samples, frequency, samples_count] = load_audio(filename, start_second
   endif
   
   samples = samples((start_sample:end_sample),:);
-  samples_count = length(samples(:,1));
 endfunction

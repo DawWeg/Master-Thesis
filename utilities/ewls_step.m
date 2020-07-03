@@ -22,6 +22,7 @@ function [coefficients, covariance_matrix, error, noise_variance] = ewls_step( .
       (covariance_matrix * regression) ...
       / ...
       (ewls_lambda + regression_cov * regression);
+      
   % Calculate new covariance matrix as 
   %          1     
   % Q(t) = ------ * ( Ir - k(t) * fi'(t) ) * Q(t-1)
@@ -31,8 +32,8 @@ function [coefficients, covariance_matrix, error, noise_variance] = ewls_step( .
       (1/ewls_lambda) * (covariance_matrix - gain_vector * regression_cov);
   
   % Calculate new coefficients as:
-  % teta(t) = teta(t-1) + Q(t) * fi(t) * e(t) 
-  %         = teta(t-1) + k(t) * e(t)
+  % theta(t) = theta(t-1) + Q(t) * fi(t) * e(t) 
+  %         = theta(t-1) + k(t) * e(t)
   coefficients = coefficients + gain_vector * error;
   
   % Calculate noise variance as:
