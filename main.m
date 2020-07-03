@@ -1,7 +1,7 @@
 %%% Preparing workspace
 clear all;
 close all;
-clc;
+clc; tic(); %hack
 output_precision(12);
 max_recursion_depth(10);
 addpath("utilities");
@@ -13,6 +13,7 @@ should_plot = 1;
 should_save_audio = 1;
 load_audio_start_second = 0;
 load_audio_end_second = 7; %-1 for whole file
+global output_directory="output_samples/";
 global ewls_lambda = 0.999;
 global ewls_lambda_0 = 0.998;
 global ewls_noise_variance_coupled = 1; % 1=coupled | other=decoupled
@@ -64,8 +65,8 @@ endif
 
 %%% Saving audio files
 if should_save_audio
-  %save_audio(current_file, R_U_S_T_RK_output_signal, frequency);
-  save_audio(current_file, P_U_S_O_RK_output_signal, frequency);
+  %save_audio(current_file, R_U_S_T_RK_output_signal, frequency, 1);
+  save_audio(current_file, P_U_S_O_RK_output_signal, frequency, 1);
 endif
 
 
