@@ -2,7 +2,7 @@
 clear all;
 close all;
 clc;
-output_precision(9);
+output_precision(12);
 max_recursion_depth(10);
 addpath("utilities");
 addpath("methods");
@@ -12,13 +12,13 @@ addpath("methods");
 should_plot = 1;
 should_save_audio = 1;
 load_audio_start_second = 0;
-load_audio_end_second = 5; %-1 for whole file
+load_audio_end_second = 7; %-1 for whole file
 global ewls_lambda = 0.999;
 global ewls_lambda_0 = 0.998;
 global ewls_noise_variance_coupled = 1; % 1=coupled | other=decoupled
 global ewls_initial_cov_matrix = 100;
 global model_rank = 10;
-global mu = 6;
+global mu = 4;
 
 % Residual methods exclusive parameters
 block_size = 256;
@@ -48,10 +48,11 @@ current_file = filenames(4,:);
 %   R_U_S_T_RK_release_threshold  ] = R_U_S_T_RK(input_signal, block_size, block_shift);
 %R_U_S_T_RK_threshold = [R_U_S_T_RK_activate_threshold, R_U_S_T_RK_release_threshold];
   
+dbstop("P_U_S_O_VK");  
 [  P_U_S_O_RK_output_signal,...
    P_U_S_O_RK_detection_signal,...
    P_U_S_O_RK_prediction_errors,...
-   P_U_S_O_RK_activate_threshold  ] = P_U_S_O_RK(input_signal);   
+   P_U_S_O_RK_activate_threshold  ] = P_U_S_O_VK(input_signal);   
 %%% Plotting results 
 if should_plot
   %plot_result(1, input_signal, R_U_S_T_RK_detection_signal, R_U_S_T_RK_output_signal);
