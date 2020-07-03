@@ -28,7 +28,7 @@ while(t <= N);
               coefficients_trajectory(t-1,:)', ...
               noise_variance_trajectory(t-1));
     error_threshold(t) = mu*sqrt(noise_variance_trajectory(t-1)); 
-    if(t < detection_delay || t > N-model_rank || counter > 0)
+    if(t < detection_delay || t > N-model_rank-max_corrupted_block_length || counter > 0)
       counter = counter - 1;
       t = t + 1;
       continue;
@@ -74,15 +74,16 @@ while(t <= N);
         elseif(i >= max_corrupted_block_length)
           m = max_corrupted_block_length;
           q = 2*model_rank + m;
-          detection_signal(block_start_index:t+max_corrupted_block_length-1) = 1;
-          clear_signal(block_start_index:t+max_corrupted_block_length) = recursive_interpolation( ...
-                  clear_signal(block_start_index-q:t+max_corrupted_block_length+model_rank), ...
+          detection_signal(block_start_index:t+m-1) = 1;
+          clear_signal(block_start_index:t+m) = recursive_interpolation( ...
+                  clear_signal(block_start_index-q:t+m+model_rank), ...
                   m, ...
                   q, ...
                   coefficients_trajectory(t-1,:), ...
                   noise_variance_trajectory(t-1));
           t = t-1;  
-          counter = model_rank;        
+          counter = model_rank; 
+          break;       
         endif                
       endfor 
     endif

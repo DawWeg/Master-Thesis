@@ -2,6 +2,7 @@
 clear all;
 close all;
 clc;
+tic;
 output_precision(12);
 max_recursion_depth(10);
 addpath("utilities");
@@ -12,7 +13,7 @@ addpath("methods");
 should_plot = 1;
 should_save_audio = 1;
 load_audio_start_second = 0;
-load_audio_end_second = 7; %-1 for whole file
+load_audio_end_second = 0.5; %-1 for whole file
 global ewls_lambda = 0.999;
 global ewls_lambda_0 = 0.998;
 global ewls_noise_variance_coupled = 1; % 1=coupled | other=decoupled
@@ -36,11 +37,13 @@ filenames = [ ...
               "Chopin_Etiuda_Op_25_nr_10.WAV";...
               "12.wav" ...
             ]; 
-current_file = filenames(4,:);
+current_file = filenames(1,:);
 
 [input_signal, frequency] = load_audio(current_file, load_audio_start_second, load_audio_end_second);
-
+input_signal = input_signal(:,1);
 %%% Executing alogorithms
+
+%dbstop("R_U_S_T_RK"); 
 %[  R_U_S_T_RK_output_signal,...
 %   R_U_S_T_RK_detection_signal,...
 %   R_U_S_T_RK_residual_errors,...
@@ -48,7 +51,7 @@ current_file = filenames(4,:);
 %   R_U_S_T_RK_release_threshold  ] = R_U_S_T_RK(input_signal, block_size, block_shift);
 %R_U_S_T_RK_threshold = [R_U_S_T_RK_activate_threshold, R_U_S_T_RK_release_threshold];
   
-dbstop("P_U_S_O_VK");  
+dbstop("P_U_S_O_RK");  
 [  P_U_S_O_RK_output_signal,...
    P_U_S_O_RK_detection_signal,...
    P_U_S_O_RK_prediction_errors,...
