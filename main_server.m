@@ -39,7 +39,7 @@ filenames = [ ...
 
 for i=1:length(filenames)
 
-  current_file = filenames(i,:);
+  current_file = deblank(strtrim(filenames(i,:)));
 
   [input_signal, frequency] = load_audio(current_file, load_audio_start_second, load_audio_end_second);
   input_signal = input_signal(:,1);
