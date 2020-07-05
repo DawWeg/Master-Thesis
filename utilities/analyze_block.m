@@ -1,4 +1,4 @@
-function [lr_detection_signal] = AnalyzeBlock (l_detection_signal, r_detection_signal)
+function [lr_detection_signal] = analyze_block (l_detection_signal, r_detection_signal)
 global AR_model_order alarm_expand;
 block_length = length(l_detection_signal );
 alarm_length = block_length - 2*AR_model_order;
