@@ -11,9 +11,9 @@ T - Two Thresholds Detector<br><br>
 RK - Recursive Kalman Filter Interpolation<br>
 VK - Variable Order Kalman Filter Interpolation<br><br>
 
-|       | O RK | O VK | C RK | O VK |
-|-------|------|------|------|------|
-| P U S | DONE | DONE | DONE | DONE |
-| P U V |      |      |      |      | 
-| R U S |      |      |      |      |
-| R U V |      |      |      |      |
+|       | O RK | O VK | C RK | O VK | T RK |
+|-------|------|------|------|------|------|
+| P U S | DONE | DONE | DONE | DONE |      |
+| P U V |      |      |      |      |      |
+| R U S |      |      |      |      | DONE |
+| R U V |      |      |      |      |      |
