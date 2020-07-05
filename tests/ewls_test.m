@@ -1,3 +1,7 @@
+clear all;
+close all;
+clc;
+tic;
 addpath("utilities");
 
 
@@ -39,13 +43,13 @@ endfor
 
 %output_signal = ar_output_coef_traj(randn(samples,1).*noise_variance_trajectory, coefficients_estimated_trajectory);
 %output_signal = ar_output(randn(samples,1).*noise_variance_trajectory, coefficients_estimated_trajectory(:,samples));
-output_signal = ar_output(randn(samples, 1), coefficients_estimated_trajectory(:,end));
+output_signal = ar_output(randn(samples, 1).*sqrt(noise_variance_trajectory), coefficients_estimated_trajectory(:,end));
 figure(1)
 subplot(3,1,1); 
-plot(input_signal);
+plot(input_signal); ylim([min(input_signal), max(input_signal)]);
 title('Input Signal:');
 subplot(3,1,2); 
-plot(output_signal);
+plot(output_signal); ylim([min(input_signal), max(input_signal)]);
 title('Output Signal:');
 subplot(3,1,3);
 plot(error_trajectory);
