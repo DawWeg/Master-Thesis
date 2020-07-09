@@ -42,6 +42,7 @@ filenames = [ ...
 current_file = filenames(1,:);
 
 [input_signal, frequency] = load_audio(current_file, load_audio_start_second, load_audio_end_second);
+input_signal = input_signal';
 input_signal = input_signal(:,1);
 %%% Executing alogorithms
 
