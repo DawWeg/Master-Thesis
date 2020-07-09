@@ -41,16 +41,37 @@ current_file = filenames(1,:);
 input_signal = input_signal';
 
 dbstop("P_U_V_C_VK");
-[coefficients_trajectory, error_trajectory, model_output] = P_U_V_C_VK(input_signal); 
+[detection_signal, coefficients_trajectory, error_trajectory, error_threshold_trajectory, noise_variance_trajectory, model_output] = ...
+          P_U_V_C_VK(input_signal); 
 
 figure(1);
-subplot(2,2,1);
+subplot(4,2,1);
 plot(input_signal(1,:));
-subplot(2,2,2);
+subplot(4,2,2);
 plot(input_signal(2,:));
-subplot(2,2,3);
+subplot(4,2,3);
+plot(abs(error_trajectory(1,:)));
+hold on;
+plot(error_threshold_trajectory(1,:), 'r');
+hold off;
+subplot(4,2,4);
+plot(abs(error_trajectory(2,:)));
+hold on;
+plot(error_threshold_trajectory(2,:), 'r');
+hold off;
+subplot(4,2,5);
+plot(detection_signal(1,:));
+subplot(4,2,6);
+plot(detection_signal(2,:));
+subplot(4,2,7);
 plot(model_output(1,:));
-subplot(2,2,4);
+subplot(4,2,8);
 plot(model_output(2,:));
 
-save_audio(current_file, "modeling", model_output', frequency, 1);
+figure(2);
+subplot(2,1,1);
+plot(noise_variance_trajectory(1,:));
+subplot(2,1,2);
+plot(noise_variance_trajectory(2,:));
+
+%save_audio(current_file, "modeling", model_output', frequency, 1);

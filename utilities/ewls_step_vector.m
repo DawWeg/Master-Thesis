@@ -16,15 +16,14 @@ function [coefficients, covariance_matrix, error, noise_variance] =ewls_step_vec
 
   coefficients = coefficients + [gain_vector*error(1); gain_vector*error(2)];
   
-  noise_variance = [0; 0];
-  %if(ewls_noise_variance_coupled==1)
-  %  sigma = ...
-  %    ewls_lambda ...
-  %    /...
-  %    (ewls_lambda + regression_cov*regression);
+  if(ewls_noise_variance_coupled==1)
+    sigma = ...
+      ewls_lambda ...
+      /...
+      (ewls_lambda + regression_cov*regression);
       
-  %  noise_variance = ewls_lambda*noise_variance + (1-ewls_lambda)*error*error'*sigma;
-  %else 
-  %  noise_variance = ewls_lambda_0*noise_variance + (1-ewls_lambda_0)*error*error';
-  %endif
+    noise_variance = ewls_lambda*noise_variance + (1-ewls_lambda)*error*error'*sigma;
+  else 
+    noise_variance = ewls_lambda_0*noise_variance + (1-ewls_lambda_0)*error*error';
+  endif
 endfunction

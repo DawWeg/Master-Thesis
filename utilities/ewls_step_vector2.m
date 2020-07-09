@@ -14,5 +14,14 @@ function [coefficients, ...
     error(j) = input_signal(j) - regression_vector'*coefficients(:,j);
     coefficients(:,j) = coefficients(:,j) + gain_vector*error(j);
   endfor
-  noise_variance = [0; 0]; 
+  if(ewls_noise_variance_coupled==1)
+    sigma = ...
+      ewls_lambda ...
+      /...
+      (ewls_lambda + temp*regression_vector);
+      
+    noise_variance = ewls_lambda*noise_variance + (1-ewls_lambda)*error*error'*sigma;
+  else 
+    noise_variance = ewls_lambda_0*noise_variance + (1-ewls_lambda_0)*error*error';
+  endif
 endfunction
