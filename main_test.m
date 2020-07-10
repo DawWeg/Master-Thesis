@@ -2,8 +2,6 @@
 clear all;
 close all;
 clc;
-tic;
-
 output_precision(12);
 max_recursion_depth(10);
 addpath("utilities");

@@ -16,12 +16,13 @@ function [detection_signal, ...
   clear_signal = input_signal;
   detection_signal = zeros(2, N);
   counter = 0;  
-  inv_lambda = 1/ewls_lambda; 
+  inv_lambda = 1/ewls_lambda;
   
   model_output = zeros(2, N);  
   model_regression_vector = zeros(2*model_rank, 1);
   
-  for t = 2:N
+  t = 2;
+  while(t <= N)
     %%% Model estimation
     regression_vector = [clear_signal(1,t-1); clear_signal(2,t-1); regression_vector(1:end-2)];
     [coefficients_trajectory(:,t,:), ...
@@ -40,10 +41,13 @@ function [detection_signal, ...
       model_output(j,t) = coefficients_trajectory(:,t,j)'*model_regression_vector + error_trajectory(j,t);
     endfor 
     
-    %%% Detection
     if(t < detection_delay || t > N-model_rank-max_corrupted_block_length || counter > 0)
+      t = t + 1;
+      counter = counter - 1;
       continue;
-    endif    
+    endif
+    
+    %%% Detection        
     detection = abs(error_trajectory(:,t)) > error_threshold_trajectory(:,t);
     if(any(detection))
       detection_signal(:,t) = detection;
@@ -57,13 +61,42 @@ function [detection_signal, ...
         kalman_H = kalman_covariance_matrix*kalman_coefficients;
         kalman_noise_variance = kalman_coefficients'*kalman_H + noise_variance_trajectory(:,t-1);
         kalman_covariance_matrix = [kalman_noise_variance, kalman_H'; kalman_H, kalman_covariance_matrix];
-        kalman_coefficients = [kalman_coefficients; zeros(2)];
+        kalman_coefficients = [kalman_coefficients; zeros(2)];        
+        detection = mround(kalman_error'*inv(kalman_noise_variance)*kalman_error) > mu*mu;
+        detection_signal(:,t+i) = detection;
+        %detection = abs(kalman_error) > mu*sqrt([kalman_noise_variance(1,1); kalman_noise_variance(end,end)]);
+        if(!any(detection) || i == max_corrupted_block_length)     
+          kalman_L = mround(kalman_covariance_matrix(:,1:2)*inv(kalman_noise_variance));
+          kalman_state_vector = kalman_state_vector + kalman_L*kalman_error;
+          kalman_covariance_matrix = kalman_covariance_matrix - kalman_L*kalman_noise_variance*kalman_L';
+        elseif(all(detection))
+          kalman_state_vector = kalman_state_vector;
+          kalman_covariance_matrix = kalman_covariance_matrix;
+        elseif(detection(1))
+          kalman_L = mround((1/kalman_noise_variance(end,end))*kalman_covariance_matrix(:,2));
+          kalman_state_vector = kalman_state_vector + kalman_L*kalman_error(2,:);
+          kalman_covariance_matrix = kalman_covariance_matrix - kalman_noise_variance(end,end)*kalman_L*kalman_L';
+        else
+          kalman_L = mround((1/kalman_noise_variance(1,1))*kalman_covariance_matrix(:,1));
+          kalman_state_vector = kalman_state_vector + kalman_L*kalman_error(1,:);
+          kalman_covariance_matrix = kalman_covariance_matrix - kalman_noise_variance(1,1)*kalman_L*kalman_L';
+        endif
+        if(i == max_corrupted_block_length-1)
+          %%% Interpolate
+          counter = model_rank;
+          t = t-1;
+          break;
+        elseif(max(max(detection_signal(:,t+i-model_rank+1:t+i))) == 0)
+          %%% Interpolate
+          counter = model_rank;
+          t = t-1;
+          break;
+        endif        
       endfor      
-    endif   
-
-    
+    endif     
     if(mod(t,5000) == 0)
       printf("[%*d|100]\n", 3, round((t/N)*100));
-    endif   
-  endfor
+    endif 
+    t = t + 1;  
+  endwhile
 endfunction
