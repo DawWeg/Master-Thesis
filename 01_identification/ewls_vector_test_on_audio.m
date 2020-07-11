@@ -50,6 +50,7 @@ for t=2:N
 endfor
 print_progress("Vector EWLS", N, N, 2000);
 
+
 output_signal = zeros(size(input_signal));
 regression = zeros(2*model_rank, 1);
 for t=2:N
