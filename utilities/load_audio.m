@@ -1,5 +1,6 @@
 function [samples, frequency] = load_audio(filename, start_seconds, end_seconds)
-  [samples, frequency] = audioread(strcat(["input_samples/", filename]));
+  global input_directory;
+  [samples, frequency] = audioread(strcat([input_directory, filename]));
   sample_time = 1/frequency;
   start_sample = ceil(start_seconds/sample_time) + 1;
   
