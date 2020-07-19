@@ -1,4 +1,4 @@
-function [coefficients_estimate, r] = levinson_durbin_estimation (N, input_signal)
+function [coefficients_estimate] = levinson_durbin_estimation (N, input_signal)
   global process_rank;
   input_signal = [zeros(process_rank,1); input_signal; zeros(process_rank,1)];
   coefficients_estimate = zeros(process_rank, 1);
