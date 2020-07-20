@@ -1,6 +1,5 @@
-function isStable = check_stability (model_coefficients)
+function isStable = check_stability (model_coefficients, model_rank)
 %%% Preparing variables
-global model_rank;
 a = zeros(model_rank);
 a(end,:) = -model_coefficients;
 isStable = 1;

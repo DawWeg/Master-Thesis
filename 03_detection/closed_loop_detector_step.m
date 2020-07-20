@@ -9,13 +9,13 @@ function [kalman_state_vector, ...
                                    noise_variance, ...
                                    input_sample)
                                    
-kalman_output_prediction = kalman_coefficients*kalman_state_vector;
+kalman_output_prediction = kalman_coefficients'*kalman_state_vector;
 kalman_error = input_sample - kalman_output_prediction;
 kalman_state_vector = [kalman_output_prediction; kalman_state_vector];
-kalman_h = kalman_covariance_matrix*kalman_coefficients';
-kalman_noise_variance = kalman_coefficients*kalman_h + noise_variance;
+kalman_h = kalman_covariance_matrix*kalman_coefficients;
+kalman_noise_variance = kalman_coefficients'*kalman_h + noise_variance;
 kalman_covariance_matrix = [kalman_noise_variance, kalman_h'; kalman_h, kalman_covariance_matrix];
-kalman_coefficients = [kalman_coefficients, 0];                                     
+kalman_coefficients = [kalman_coefficients; 0];                                     
                                    
 
 endfunction
