@@ -1,8 +1,8 @@
-function [interpolated_samples] = recursive_interpolation (input_signal, m, q, model_coefficients, noise_variance)
+function [interpolated_samples] = recursive_interpolation (input_signal, model_coefficients, noise_variance, m, q)
 %%% Preparing variables
 global model_rank;
 state_vector = input_signal(q:-1:1);
-transition_matrix = [[model_coefficients, zeros(1, q-model_rank)]; eye(q-1,q)];
+transition_matrix = [[model_coefficients', zeros(1, q-model_rank)]; eye(q-1,q)];
 output_vector = [1; zeros(q-1,1)];
 covariance_matrix = zeros(q);
 %%% Interpolation loop
@@ -10,7 +10,7 @@ for t = q+1:q+m+model_rank
   state_vector = transition_matrix*state_vector;
   covariance_matrix = transition_matrix*covariance_matrix*transition_matrix' + ...
                       output_vector*output_vector'*noise_variance;
-  if(t < q+m)
+  if(t < q+1+m)
     state_vector = state_vector;
     covariance_matrix = covariance_matrix;
   else
