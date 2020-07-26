@@ -16,12 +16,12 @@ for t = model_rank+1:2*model_rank+m
     state_vector = state_vector;
     covariance_matrix = covariance_matrix;
   else
-    l = mround((1/noise_variance_estimate)*covariance_matrix(:,1));
-    state_vector = mround(state_vector + l*error);
-    covariance_matrix = mround(covariance_matrix - noise_variance_estimate*l*l');
-    %l = ((1/noise_variance_estimate)*covariance_matrix(:,1));
-    %state_vector = (state_vector + l*error);
-    %covariance_matrix = (covariance_matrix - noise_variance_estimate*l*l');
+    %l = mround((1/noise_variance_estimate)*covariance_matrix(:,1));
+    %state_vector = mround(state_vector + l*error);
+    %covariance_matrix = mround(covariance_matrix - noise_variance_estimate*l*l');
+    l = ((1/noise_variance_estimate)*covariance_matrix(:,1));
+    state_vector = (state_vector + l*error);
+    covariance_matrix = (covariance_matrix - noise_variance_estimate*l*l');
   endif
 endfor
 %%% Taking interpolated samples from state vector

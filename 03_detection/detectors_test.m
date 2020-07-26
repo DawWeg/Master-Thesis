@@ -1,12 +1,12 @@
 run("init.m");
 pkg load signal;
 page_output_immediately(1);
-
+load('random_noise.mat');
 %%% Generating autoregressive process
-N = 5100;
+N = 10000;
 process_poles = [0.9; 0.7; -0.4+0.4i; -0.4-0.4i; 0.3+0.4i; 0.3-0.4i; 0.0; 0.7+0.1i; 0.7-0.1i; -0.9];
 
-global process_rank = length(process_poles(:,1));
+process_rank = length(process_poles(:,1));
 process_coefficients = zeros(process_rank+1, N);
 process_coefficients = real(poly(process_poles));
 
@@ -15,96 +15,159 @@ process_output = zeros(N, 1);
 
 for t = 2:N
   process_regression_vector = [process_output(t-1); process_regression_vector(1:end-1)];
-  process_output(t) = -process_coefficients(2:end)*process_regression_vector + 0.1*randn;
+  process_output(t) = -process_coefficients(2:end)*process_regression_vector + 0.1*random_noise(t);
   if(t == 2000)
     x = 5;
     process_output(t) = process_output(t);
   endif
 endfor
-process_output(5001:5005) = 25;
-dbstop("open_loop_test.m");
-dbstop("closed_loop_test.m");
+%%% Test 1
+%{
+corrupted_block_start1 = 6001;
+corrupted_block_end1 = 6002;
+process_output(corrupted_block_start1:corrupted_block_end1) = 10;
+
+corrupted_block_start2 = 6002;
+corrupted_block_end2 = 6005;
+process_output(corrupted_block_start2:corrupted_block_end2) = 10;
+%}
+
+%%% Test 2
+%{
+corrupted_block_start1 = 6001;
+corrupted_block_end1 = 6025;
+process_output(corrupted_block_start1:corrupted_block_end1) = 25;
+
+corrupted_block_start2 = 6025;
+corrupted_block_end2 = 6050;
+process_output(corrupted_block_start2:corrupted_block_end2) = 25;
+%}
+
+%%% Test 3
+%{
+corrupted_block_start1 = 6001;
+corrupted_block_end1 = 6005;
+process_output(corrupted_block_start1:corrupted_block_end1) = 25;
+
+corrupted_block_start2 = 6008;
+corrupted_block_end2 = 6010;
+process_output(corrupted_block_start2:corrupted_block_end2) = 25;
+%}
+
+%%% Test 4
+
+corrupted_block_start1 = 6001;
+corrupted_block_end1 = 6020;
+process_output(corrupted_block_start1:2:corrupted_block_end1) = 25;
+
+corrupted_block_start2 = 6001;
+corrupted_block_end2 = 6020;
+%}
+
+cl_clear_signal = process_output;
+ol_clear_signal = process_output;
+
+%dbstop("open_loop_test.m");
+%dbstop("closed_loop_test.m");
 run("open_loop_test.m");
 run("closed_loop_test.m");
 
-%%% Printing results
 figure(1);
-zplane([], process_poles);
-%for i = 1:model_rank
-%  plot(process_poles(i,:));
-%  hold on;
-%endfor
-%hold off;
-
-figure(2);
+clf;
 subplot(4,1,1);
-plot(process_output, 'b');
+title('Generated AR process output');
 hold on;
-plot(process_output, 'b.', 'markersize', 15);
+plot(process_output, 'k');
+plot(ol_clear_signal, 'b');
+plot(cl_clear_signal, 'r');
+legend('process output', 'ol interpolation', 'cl interpolation');
+plot(process_output, 'k.', 'markersize', 15);
+plot(ol_clear_signal, 'b.', 'markersize', 15);
+plot(cl_clear_signal, 'r.', 'markersize', 15);
 hold off;
 grid on;
-xlim([4995 5030]);
+xlabel('t');
+ylabel('y(t), \sim{y(t)}');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
 subplot(4,1,2);
+title('Errors and error thresholds');
+hold on;
 plot(abs(ol_error_trajectory), 'b');
-hold on;
+plot(ol_threshold_trajectory, 'g');
+plot(abs(cl_error_trajectory), 'r');
+plot(cl_threshold_trajectory, 'm');
+legend('ol error', 'ol threshold', 'cl error', 'cl threshold');
 plot(abs(ol_error_trajectory), 'b.', 'markersize', 15);
-plot(ol_threshold_trajectory, 'r');
-plot(ol_threshold_trajectory, 'r.', 'markersize', 15);
+plot(ol_threshold_trajectory, 'g.', 'markersize', 15);
+plot(abs(cl_error_trajectory), 'r.', 'markersize', 15);
+plot(cl_threshold_trajectory, 'm.', 'markersize', 15);
 hold off;
 grid on;
-xlim([4995 5030]);
+xlabel('t');
+ylabel('e(t)');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
 subplot(4,1,3);
+title('Initial detection decisions');
+hold on;
 stairs(ol1_detection_signal, 'b');
-hold on;
+stairs(cl1_detection_signal, 'r');
+legend('ol detection', 'cl detection');
 plot(ol1_detection_signal, 'b.', 'markersize', 15);
+plot(cl1_detection_signal, 'r.', 'markersize', 15);
 hold off;
 grid on;
-xlim([4995 5030]);
+xlabel('t');
+ylabel('d_0(t)');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
 subplot(4,1,4);
+title('Final detection signals');
+hold on;
 stairs(ol_detection_signal, 'b');
-hold on;
+stairs(cl_detection_signal, 'r');
+legend('ol detection', 'cl detection');
 plot(ol_detection_signal, 'b.', 'markersize', 15);
+plot(cl_detection_signal, 'r.', 'markersize', 15);
 hold off;
 grid on;
-xlim([4995 5030]);
+xlabel('t');
+ylabel('d(t)');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
+ 
+figure(2);
+clf;
+subplot(3,1,1);
+title('Final detection signals');
+hold on;
+stairs(ol_detection_signal, 'b');
+stairs(cl_detection_signal, 'r');
+legend('ol detection', 'cl detection');
+plot(ol_detection_signal, 'b.', 'markersize', 15);
+plot(cl_detection_signal, 'r.', 'markersize', 15);
+hold off;
+grid on;
+xlabel('t');
+ylabel('d(t)');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
+subplot(3,1,2);
+title('Differences in error thresholds');
+hold on;
+plot(abs(cl_threshold_trajectory-ol_threshold_trajectory), 'k');
+legend('|cl threshold - ol threshold|');
+plot(abs(cl_threshold_trajectory-ol_threshold_trajectory), 'k.', 'markersize', 15);
+hold off;
+grid on;
+xlabel('t');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
+subplot(3,1,3);
+title('Differences in errors');
+hold on;
+plot(abs(cl_error_trajectory-ol_error_trajectory), 'k');
+legend('|cl error - ol error|');
+plot(abs(cl_error_trajectory-ol_error_trajectory), 'k.', 'markersize', 15);
+hold off;
+grid on;
+xlabel('t');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
+ 
 
-figure(3);
-subplot(4,1,1);
-plot(process_output, 'b');
-hold on;
-plot(process_output, 'b.', 'markersize', 15);
-hold off;
-grid on;
-xlim([4995 5030]);
-subplot(4,1,2);
-plot(abs(cl_error_trajectory), 'b');
-hold on;
-plot(abs(cl_error_trajectory), 'b.', 'markersize', 15);
-plot(cl_threshold_trajectory, 'r');
-plot(cl_threshold_trajectory, 'r.', 'markersize', 15);
-hold off;
-grid on;
-xlim([4995 5030]);
-subplot(4,1,3);
-stairs(cl1_detection_signal, 'b');
-hold on;
-plot(cl1_detection_signal, 'b.', 'markersize', 15);
-hold off;
-grid on;
-xlim([4995 5030]);
-subplot(4,1,4);
-stairs(cl_detection_signal, 'b');
-hold on;
-plot(cl_detection_signal, 'b.', 'markersize', 15);
-hold off;
-grid on;
-xlim([4995 5030]);
 
-figure(4);
-for i = 1:process_rank
-subplot(process_rank/2,2,i);
-plot(ewls_coefficients_estimate(i,:));
-hold on;
-plot(-process_coefficients(i+1)*ones(N,1));
-hold off;
-endfor

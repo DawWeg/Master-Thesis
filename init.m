@@ -1,6 +1,6 @@
 % Clear workspace
 clear all;
-close all;
+%close all;
 clc;
 tic;
 
@@ -16,7 +16,7 @@ addpath("04_interpolation");
 
 global output_directory="00_data/output_samples/";
 global input_directory="00_data/input_samples/";
-global max_corrupted_block_length = 50;
+global max_corrupted_block_length = 100;
 global decimal_accuracy = 12;
 output_precision(decimal_accuracy);
 max_recursion_depth(10);

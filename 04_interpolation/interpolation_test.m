@@ -23,7 +23,7 @@ for t = 2:N
 endfor
 
 corrupted_block_start = 6001;
-corrupted_block_end = 6030;
+corrupted_block_end = 6050;
 
 %%% Allocating memory
 ewls_regression_vector = zeros(process_rank, 1);
@@ -75,42 +75,65 @@ endwhile
 
 %%% Printing results
 figure(1);
-for i = 1:process_rank
-subplot(process_rank/2,2,i);
-plot(ewls_coefficients_estimate(i,:));
+clf;
+subplot(2,1,1);
+title('Original process output');
 hold on;
-plot(-process_coefficients(i+1)*ones(N,1));
-hold off;
-endfor
-
-figure(2);
-subplot(3,1,1);
-plot(process_output);
-legend('AR process output');
+plot(process_output, 'b');
+legend('AR process output', 'location', 'northeast');
+plot(process_output, 'b.', 'markersize', 15);
+ylabel('y(t)');
+xlabel('t');
 xlim([corrupted_block_start-model_rank corrupted_block_end+model_rank]);
+hold off;
 grid on;
-subplot(3,1,2);
+subplot(2,1,2);
+title('Interpolations m = 50');
 hold on;
 plot(batch_clear_signal, 'b');
 plot(recursive_clear_signal, 'r');
 plot(variable_clear_signal, 'g');
-legend('batch interpolation', 'recursive interpolation', 'variable rank recursive interpolation');
+legend('batch interpolation', 'recursive interpolation', 'variable rank recursive interpolation', 'location', 'northeast');
 plot(batch_clear_signal, 'b.', 'markersize', 15);
 plot(recursive_clear_signal, 'r.', 'markersize', 15);
 plot(variable_clear_signal, 'g.', 'markersize', 15);
-xlim([corrupted_block_start-model_rank corrupted_block_end+model_rank]);
-grid on;
-hold off;
-subplot(3,1,3);
-hold on;
-plot(abs(process_output-batch_clear_signal), 'b');
-plot(abs(process_output-recursive_clear_signal), 'r');
-plot(abs(process_output-variable_clear_signal), 'g');
-legend('batch interpolation error', 'recursive interpolation error', 'variable rank recursive interpolation error');
-plot(abs(process_output-batch_clear_signal), 'b.', 'markersize', 15);
-plot(abs(process_output-recursive_clear_signal), 'r.', 'markersize', 15);
-plot(abs(process_output-variable_clear_signal), 'g.', 'markersize', 15);
+ylabel('{\sim{y}}(t)');
+xlabel('t');
 xlim([corrupted_block_start-model_rank corrupted_block_end+model_rank]);
 grid on;
 hold off;
 
+figure(2);
+clf;
+subplot(2,1,1);
+title('Interpolation errors')
+hold on;
+plot(abs(process_output-batch_clear_signal), 'b');
+plot(abs(process_output-recursive_clear_signal), 'r');
+plot(abs(process_output-variable_clear_signal), 'g');
+legend('batch interpolation error', 'recursive interpolation error', 'variable interpolation error', 'location', 'northeast');
+plot(abs(process_output-batch_clear_signal), 'b.', 'markersize', 15);
+plot(abs(process_output-recursive_clear_signal), 'r.', 'markersize', 15);
+plot(abs(process_output-variable_clear_signal), 'g.', 'markersize', 15);
+ylabel('y(t) - \sim{y}(t)');
+xlabel('t');
+xlim([corrupted_block_start-model_rank corrupted_block_end+model_rank]);
+grid on;
+hold off;
+subplot(2,1,2);
+title('Differences between interpolations');
+hold on;
+plot(abs(batch_clear_signal - recursive_clear_signal), 'b');
+plot(abs(batch_clear_signal - variable_clear_signal), 'g');
+plot(abs(recursive_clear_signal - variable_clear_signal), 'c');
+plot((abs(batch_clear_signal - recursive_clear_signal)+abs(batch_clear_signal - variable_clear_signal)+abs(recursive_clear_signal - variable_clear_signal))/3 , 'r');
+legend('|batch interpolation - recursive interpolation|', '|batch interpolation - variable interpolation|', '|recursive interpolation - variable interpolation|', 'average error', 'location', 'northeast');
+plot(abs(batch_clear_signal - recursive_clear_signal), 'b.', 'markersize', 15);
+plot(abs(batch_clear_signal - variable_clear_signal), 'g.', 'markersize', 15);
+plot(abs(recursive_clear_signal - variable_clear_signal), 'c.', 'markersize', 15);
+plot((abs(batch_clear_signal - recursive_clear_signal)+abs(batch_clear_signal - variable_clear_signal)+abs(recursive_clear_signal - variable_clear_signal))/3 , 'r.', 'markersize', 15);
+ylabel('e(t)');
+xlabel('t');
+hold off;
+grid on;
+xlim([corrupted_block_start-model_rank corrupted_block_end+model_rank]);
