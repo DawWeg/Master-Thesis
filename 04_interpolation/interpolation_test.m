@@ -23,7 +23,7 @@ for t = 2:N
 endfor
 
 corrupted_block_start = 6001;
-corrupted_block_end = 6050;
+corrupted_block_end = 6030;
 
 %%% Allocating memory
 ewls_regression_vector = zeros(process_rank, 1);
@@ -77,26 +77,30 @@ endwhile
 figure(1);
 clf;
 subplot(2,1,1);
-title('Original process output');
+title('Wejsciowy proces AR');
 hold on;
 plot(process_output, 'b');
-legend('AR process output', 'location', 'northeast');
+legend('wyjscie procesu AR', 'location', 'northeast');
 plot(process_output, 'b.', 'markersize', 15);
+plot([corrupted_block_start corrupted_block_start], [-10 10], 'k');
+plot([corrupted_block_end corrupted_block_end], [-10 10], 'k');
 ylabel('y(t)');
 xlabel('t');
 xlim([corrupted_block_start-model_rank corrupted_block_end+model_rank]);
 hold off;
 grid on;
 subplot(2,1,2);
-title('Interpolations m = 50');
+title('Rekonstrukcje sygnalu');
 hold on;
 plot(batch_clear_signal, 'b');
 plot(recursive_clear_signal, 'r');
 plot(variable_clear_signal, 'g');
-legend('batch interpolation', 'recursive interpolation', 'variable rank recursive interpolation', 'location', 'northeast');
+legend('interpolator wsadowy', 'interpolator rekurencyjny', 'interpolator rekurencyjny o zmiennym rzedzie', 'location', 'northeast');
 plot(batch_clear_signal, 'b.', 'markersize', 15);
 plot(recursive_clear_signal, 'r.', 'markersize', 15);
 plot(variable_clear_signal, 'g.', 'markersize', 15);
+plot([corrupted_block_start corrupted_block_start], [-10 10], 'k');
+plot([corrupted_block_end corrupted_block_end], [-10 10], 'k');
 ylabel('{\sim{y}}(t)');
 xlabel('t');
 xlim([corrupted_block_start-model_rank corrupted_block_end+model_rank]);

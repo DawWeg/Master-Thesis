@@ -33,13 +33,13 @@ process_output(corrupted_block_start2:corrupted_block_end2) = 10;
 %}
 
 %%% Test 2
-%{
+
 corrupted_block_start1 = 6001;
-corrupted_block_end1 = 6025;
+corrupted_block_end1 = 6009;
 process_output(corrupted_block_start1:corrupted_block_end1) = 25;
 
-corrupted_block_start2 = 6025;
-corrupted_block_end2 = 6050;
+corrupted_block_start2 = 6011;
+corrupted_block_end2 = 6012;
 process_output(corrupted_block_start2:corrupted_block_end2) = 25;
 %}
 
@@ -55,7 +55,7 @@ process_output(corrupted_block_start2:corrupted_block_end2) = 25;
 %}
 
 %%% Test 4
-
+%{
 corrupted_block_start1 = 6001;
 corrupted_block_end1 = 6020;
 process_output(corrupted_block_start1:2:corrupted_block_end1) = 25;
@@ -75,28 +75,26 @@ run("closed_loop_test.m");
 figure(1);
 clf;
 subplot(4,1,1);
-title('Generated AR process output');
+title('Wygenerowany proces AR');
 hold on;
 plot(process_output, 'k');
 plot(ol_clear_signal, 'b');
-plot(cl_clear_signal, 'r');
-legend('process output', 'ol interpolation', 'cl interpolation');
+legend('wyjscie procesu', 'interpolacja');
 plot(process_output, 'k.', 'markersize', 15);
 plot(ol_clear_signal, 'b.', 'markersize', 15);
-plot(cl_clear_signal, 'r.', 'markersize', 15);
 hold off;
 grid on;
 xlabel('t');
 ylabel('y(t), \sim{y(t)}');
 xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
 subplot(4,1,2);
-title('Errors and error thresholds');
+title('Bledy i progi detekcyjne');
 hold on;
 plot(abs(ol_error_trajectory), 'b');
 plot(ol_threshold_trajectory, 'g');
 plot(abs(cl_error_trajectory), 'r');
 plot(cl_threshold_trajectory, 'm');
-legend('ol error', 'ol threshold', 'cl error', 'cl threshold');
+legend('blad OL', 'próg detekcyjny OL', 'blad CL', 'próg detekcyjny CL');
 plot(abs(ol_error_trajectory), 'b.', 'markersize', 15);
 plot(ol_threshold_trajectory, 'g.', 'markersize', 15);
 plot(abs(cl_error_trajectory), 'r.', 'markersize', 15);
@@ -107,11 +105,11 @@ xlabel('t');
 ylabel('e(t)');
 xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
 subplot(4,1,3);
-title('Initial detection decisions');
+title('Pierwotne decyzje detektorów');
 hold on;
 stairs(ol1_detection_signal, 'b');
 stairs(cl1_detection_signal, 'r');
-legend('ol detection', 'cl detection');
+legend('detektor OL', 'detektor CL');
 plot(ol1_detection_signal, 'b.', 'markersize', 15);
 plot(cl1_detection_signal, 'r.', 'markersize', 15);
 hold off;
@@ -120,11 +118,11 @@ xlabel('t');
 ylabel('d_0(t)');
 xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
 subplot(4,1,4);
-title('Final detection signals');
+title('Koncowe sygnaly detekcyjne');
 hold on;
 stairs(ol_detection_signal, 'b');
 stairs(cl_detection_signal, 'r');
-legend('ol detection', 'cl detection');
+legend('sygnal detekcyjny OL', 'sygnal detekcyjny CL');
 plot(ol_detection_signal, 'b.', 'markersize', 15);
 plot(cl_detection_signal, 'r.', 'markersize', 15);
 hold off;
@@ -169,5 +167,54 @@ grid on;
 xlabel('t');
 xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
  
-
+figure(3);
+clf;
+subplot(4,1,1);
+title('Wygenerowany proces AR');
+hold on;
+plot(process_output, 'k');
+plot(cl_clear_signal, 'b');
+legend('wyjscie procesu', 'interpolowany sygnal');
+plot(process_output, 'k.', 'markersize', 15);
+plot(cl_clear_signal, 'b.', 'markersize', 15);
+hold off;
+grid on;
+xlabel('t');
+ylabel('y(t), \sim{y(t)}');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
+subplot(4,1,2);
+title('Bledy predykcji i progi detekcyjne');
+hold on;
+plot(abs(cl_error_trajectory), 'b');
+plot(cl_threshold_trajectory, 'g');
+legend('blad predykcji', 'próg detekcyjny');
+plot(abs(cl_error_trajectory), 'b.', 'markersize', 15);
+plot(cl_threshold_trajectory, 'g.', 'markersize', 15);
+hold off;
+grid on;
+xlabel('t');
+ylabel('e(t)');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
+subplot(4,1,3);
+title('Pierwotne decyzje detektora');
+hold on;
+stairs(cl1_detection_signal, 'b');
+legend('detekcja w petli zamknietej');
+plot(cl1_detection_signal, 'b.', 'markersize', 15);
+hold off;
+grid on;
+xlabel('t');
+ylabel('d_0(t)');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
+subplot(4,1,4);
+title('Koncowy sygnal detekcyjny');
+hold on;
+stairs(cl_detection_signal, 'b');
+legend('sygnal detekcyjny');
+plot(cl_detection_signal, 'b.', 'markersize', 15);
+hold off;
+grid on;
+xlabel('t');
+ylabel('d(t)');
+xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
 
