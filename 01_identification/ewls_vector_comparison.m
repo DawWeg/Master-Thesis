@@ -1,7 +1,7 @@
 run("init.m");
 
 
-N = 5000;
+N = 500;
 noise_l = randn(N,1);
 noise_r = randn(N,1); 
 y_l = zeros(N,1);
