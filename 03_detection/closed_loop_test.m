@@ -14,10 +14,10 @@ cl_detection_signal = zeros(N, 1);
 
 detection_delay = 10*process_rank;
 
-t = 2;
+t = model_rank+1;
 while(t <= N);
   %%% Estimation 
-  ewls_regression_vector = [cl_clear_signal(t-1); ewls_regression_vector(1:end-1)];
+  ewls_regression_vector = cl_clear_signal(t-1:-1:t-model_rank);
   [ewls_coefficients_estimate(:,t), ewls_covariance_matrix, ewls_error, ewls_noise_variance(t)] = ewls_recursive( ...
           cl_clear_signal(t), ...
           ewls_regression_vector, ...
@@ -33,7 +33,8 @@ while(t <= N);
     cl1_detection_signal(t) = 1;
     cl_corrupted_block_start = t;
     %%% Stability check
-    if(!check_stability(ewls_coefficients_estimate(:,t-1), process_rank))   
+    if(!check_stability(ewls_coefficients_estimate(:,t-1), process_rank))  
+    disp('chui'); 
     ewls_coefficients_estimate(:,t-1) = levinson_durbin_estimation( ...
         min([ewls_equivalent_window_length, t-1]), ...
         cl_clear_signal(t-(min([ewls_equivalent_window_length, t-1]))+1:t-1));    
@@ -54,9 +55,10 @@ while(t <= N);
           ewls_coefficients_estimate(:,cl_corrupted_block_start-1), ...
           ewls_noise_variance(cl_corrupted_block_start-1), m);
         for i = cl_corrupted_block_start:cl_corrupted_block_end                                                                  
-          ewls_coefficients_estimate(:,i) = ewls_coefficients_estimate(:,cl_corrupted_block_start-1);  
+          ewls_coefficients_estimate(:,i) = ewls_coefficients_estimate(:,cl_corrupted_block_start-1); 
+          ewls_noise_variance(i) = ewls_noise_variance(cl_corrupted_block_start-1); 
         endfor
-        t = t + i;
+        t = cl_corrupted_block_end;
         break;      
       endif      
       [kalman_state_vector, ...

@@ -21,6 +21,11 @@ for t = 2:N
     process_output(t) = process_output(t);
   endif
 endfor
+
+process_output = load_audio(filenames(1,:), 0.15, 2);
+process_output = process_output(:,1);
+N = length(process_output);
+
 %%% Test 1
 %{
 corrupted_block_start1 = 6001;
@@ -33,7 +38,7 @@ process_output(corrupted_block_start2:corrupted_block_end2) = 10;
 %}
 
 %%% Test 2
-
+%{
 corrupted_block_start1 = 6001;
 corrupted_block_end1 = 6009;
 process_output(corrupted_block_start1:corrupted_block_end1) = 25;
@@ -69,9 +74,10 @@ ol_clear_signal = process_output;
 
 %dbstop("open_loop_test.m");
 %dbstop("closed_loop_test.m");
-run("open_loop_test.m");
+%run("open_loop_test.m");
 run("closed_loop_test.m");
 
+%{
 figure(1);
 clf;
 subplot(4,1,1);
@@ -217,4 +223,43 @@ grid on;
 xlabel('t');
 ylabel('d(t)');
 xlim([corrupted_block_start1-model_rank corrupted_block_end2+2*model_rank]);
+%}
 
+figure(1);
+clf;
+subplot(4,1,1);
+title('Wygenerowany proces AR');
+hold on;
+plot(process_output, 'k');
+hold off;
+grid on;
+xlabel('t');
+ylabel('y(t), \sim{y(t)}');
+subplot(4,1,2);
+title('Bledy i progi detekcyjne');
+hold on;
+plot(abs(cl_error_trajectory), 'r');
+plot(cl_threshold_trajectory, 'm');
+legend('blad CL', 'próg detekcyjny CL');
+hold off;
+grid on;
+xlabel('t');
+ylabel('e(t)');
+subplot(4,1,3);
+title('Pierwotne decyzje detektorów');
+hold on;
+stairs(cl1_detection_signal, 'r');
+legend('detektor CL');
+hold off;
+grid on;
+xlabel('t');
+ylabel('d_0(t)');
+subplot(4,1,4);
+title('Koncowe sygnaly detekcyjne');
+hold on;
+stairs(cl_detection_signal, 'r');
+legend('sygnal detekcyjny CL');
+hold off;
+grid on;
+xlabel('t');
+ylabel('d(t)');
