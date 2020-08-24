@@ -1,17 +1,15 @@
-function [coefficients_estimate] = wwr_estimation (N, input_signal)
+function [coefficients_estimate] = wwr_estimation (N, input_signal, noise_variance)
   global model_rank;
-  input_signal = [zeros(model_rank,1); input_signal; zeros(model_rank,1)];
-  coefficients_estimate = zeros(model_rank, 1);
-
-  p = zeros(1, model_rank+1);
-  r = zeros(1, model_rank+1);
+  input_signal = [zeros(2,model_rank), input_signal, zeros(2,model_rank)];
+  coefficients_estimate = zeros(model_rank*4, 1);
+  R = zeros(2, 2, model_rank+1);
   for k = 1:model_rank+1
     for i = 1:N-k
-      p(k) = p(k) + input_signal(end-i)*input_signal(end-i-k+1);
+      R(:,:,k) = R(:,:,k) + input_signal(:,end-i)*input_signal(:,end-i-k+1)';
     endfor    
-    r(k) = (1/N)*p(k);
+    R(:,:,k) = (1/N).*R(:,:,k);
   endfor  
-  R = build_toeplitz_matrix(r);
-  P = r(2:end);
-  coefficients_estimate = inv(R)*P';
+  Rm = build_toeplitz_matrix(R);
+  coefficients_estimate = [noise_variance, zeros(2,model_rank*2)]*inv(Rm);
+  coefficients_estimate = [coefficients_estimate(1,3:end)'; coefficients_estimate(2,3:end)'];
 endfunction
