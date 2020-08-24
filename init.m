@@ -26,8 +26,8 @@ max_recursion_depth(10);
 global model_rank = 10;
 
 %%% EWLS
-global ewls_lambda = 0.997;
-global ewls_lambda_0 = 0.996;
+global ewls_lambda = 0.999;
+global ewls_lambda_0 = 0.998;
 global ewls_noise_variance_coupled = 0; % 1=coupled | other=decoupled
 global ewls_initial_cov_matrix = 100;
 
