@@ -23,6 +23,7 @@ ewls_error_trajectory = zeros(size(input_signal));
 ewls_threshold_trajectory = zeros(size(input_signal));
 ewls_noise_variance_trajectory = zeros(2,2,N);
 ewls_detection = zeros(size(input_signal));
+ewls_equivalent_window_length = round((1+ewls_lambda)/(1-ewls_lambda));
 clear_signal = input_signal;
 
 cl_primary_detection = zeros(size(input_signal));
@@ -62,6 +63,14 @@ while(t <= N);
   if ((ewls_detection(1,t) || ewls_detection(2,t)) && skip_detection == 0 )
     t0 = t-1;
     
+    if(check_stability_var (ewls_theta_trajectory(:,t0)) == 0)
+      printf("Model ustable on: %d.\n", t0);
+      ewls_theta_trajectory(:,t0) = ...
+          wwr_estimation(min([ewls_equivalent_window_length, t0]), ...
+          clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...
+          ewls_noise_variance_trajectory(:,:,t0-1));
+    endif
+      
     cov_matrix = zeros(2*model_rank, 2*model_rank);
     theta_l = ewls_theta_trajectory(1:2*model_rank, t0);
     theta_r = ewls_theta_trajectory(2*model_rank+1:end, t0);
@@ -84,14 +93,18 @@ while(t <= N);
       
       theta = [theta; zeros(2,2)];
       
+      if(cl_noise_variance_trajectory(1,1,tk) < 0)
+        printf("Oops, I should not be here! Negative var L: %d\n", cl_noise_variance_trajectory(1,1,tk));
+      endif
+      
+      if(cl_noise_variance_trajectory(2,2,tk) < 0)
+        printf("Oops, I should not be here! Negative var R: %d\n", cl_noise_variance_trajectory(2,2,tk));
+      endif
       
       cl_threshold_trajectory(1,tk) = mround(mu*sqrt(cl_noise_variance_trajectory(1,1,tk)));
       cl_threshold_trajectory(2,tk) = mround(mu*sqrt(cl_noise_variance_trajectory(2,2,tk)));
       cl_primary_detection(:,tk) = cl_primary_detection(:,tk) + abs(cl_error_trajectory(:,tk)) > cl_threshold_trajectory(:,tk);
       
-      if(check_stability_var (ewls_theta_trajectory(:,t0)) == 0)
-          tk
-      endif
       
       L = mround(build_gain_vector(cl_primary_detection(:,tk) , cl_noise_variance_trajectory(:,:,tk), cov_matrix));
       state_vector = state_vector + mround(L*cl_error_trajectory(:,tk));
