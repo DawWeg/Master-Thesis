@@ -1,0 +1,25 @@
+figure(1);
+subplot(3,2,1);
+plot(y_v(1,:)); grid on;  
+subplot(3,2,2);
+plot(y_v(2,:)); grid on; 
+subplot(3,2,3);
+plot(abs(error_trajectory(1,:))); hold on;
+plot(threshold_trajectory(1,:)); hold off; grid on; 
+subplot(3,2,4);
+plot(abs(error_trajectory(2,:))); hold on;  
+plot(threshold_trajectory(2,:)); hold off; grid on; 
+subplot(3,2,5);
+plot(d(1,:)); grid on; ylim([0 1.5]);
+subplot(3,2,6);
+plot(d(2,:)); grid on; ylim([0 1.5]);
+
+figure(3);
+subplot(2,1,1);
+plot(y_v(1,:)); hold on;
+%plot(secondary_clear_signal(1,:));
+plot(variable_clear_signal(1,:)); grid on; hold off;
+subplot(2,1,2);
+plot(y_v(2,:)); hold on;
+%plot(secondary_clear_signal(2,:));
+plot(variable_clear_signal(2,:)); grid on; hold off;
