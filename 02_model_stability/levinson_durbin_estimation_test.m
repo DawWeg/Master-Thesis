@@ -41,7 +41,7 @@ model_regression_vector = zeros(process_rank, 1);
 model_output = zeros(N, 1);
 model_error = zeros(N, 1);
 t = 2;
-
+model_rank = 6;
 test_count = 1;
 test_coeffs = zeros(process_rank, 1000);
 test_acf = zeros(process_rank+1, 1000);
@@ -61,10 +61,9 @@ while(t <= N);
   if(!check_stability(ewls_coefficients_estimate(:,t), process_rank) && t > process_rank*10) 
     printf("Model ustable on: %d.\n", t);
     printf("EWLS model coefficients:\n%f, %f, %f, %f, %f, %f\n", ewls_coefficients_estimate(1,t), ewls_coefficients_estimate(2,t), ewls_coefficients_estimate(3,t), ewls_coefficients_estimate(4,t), ewls_coefficients_estimate(5,t), ewls_coefficients_estimate(6,t));
-    [ewls_coefficients_estimate(:,t), r] = ...
+    [ewls_coefficients_estimate(:,t)] = ...
         levinson_durbin_estimation(min([ewls_equivalent_window_length, t]), ...
-        process_output(t-(min([ewls_equivalent_window_length, t]))+1:t));
-    test_acf(:,test_count) = r;
+        process_output(t-(min([ewls_equivalent_window_length, t]))+1:t));    
     test_coeffs(:,test_count) = ewls_coefficients_estimate(:,t);
     reference_acf(:,test_count) = acovf(flip(process_output(t-(min([ewls_equivalent_window_length, t]))+1:t))', process_rank);
     [reference_coeffs(:,test_count)] = levinson(reference_acf(:,test_count), process_rank);
