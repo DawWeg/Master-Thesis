@@ -1,14 +1,20 @@
 run("init.m");
 source("06_vector_extension/vector_utils.m");
+source("06_vector_extension/var_kalman.m");
 
 current_file = filenames(1,:);
-[input_signal, frequency] = load_audio(current_file, 0, 0.3);
+[input_signal, frequency] = load_audio(current_file, 0.0, 0.5);
 input_signal = input_signal';
 N = length(input_signal(1,:));
 
+%max_sample = max(max(abs(input_signal)));
+%signal_scale_factor = 1/max_sample;
+%input_signal = input_signal.*signal_scale_factor;
+
 Or = zeros(2*model_rank,1);
 Ir = eye(2*model_rank, 2*model_rank);
-
+%xlimits = [10560 10586];
+xlimits = [-inf inf];
 %ewls
 
 ewls_covariance_matrix_trajectory = zeros(2*model_rank,2*model_rank,N);
@@ -28,16 +34,20 @@ clear_signal = input_signal;
 
 cl_primary_detection = zeros(size(input_signal));
 cl_final_detection = zeros(size(input_signal));
-cl_noise_variance_trajectory = zeros(size(ewls_noise_variance_trajectory));
+cl_error_covariance_trajectory = zeros(size(ewls_noise_variance_trajectory));
 cl_threshold_trajectory = zeros(size(ewls_threshold_trajectory));
 cl_error_trajectory = zeros(size(ewls_threshold_trajectory));
 t = model_rank+1;
 max_alarm_length = 100;
 skip_detection = 0;
+gain_safety = 0;
 unstable_model = 0;
+not_symetric = 0;
+not_positive_definite = 0;
+
+kalman_gain_trajectory = zeros(110,2,N);
 while(t <= N);
   print_progress("Interpolation VAR", t, N, N/100);
-  %ewls_regression(:,t) = [clear_signal(:,t-1); ewls_regression(1:end-2, t-1)];
   ewls_regression(:,t) = init_regression_vector(clear_signal, model_rank, t);
   
   [ ewls_theta_trajectory(:,t), ...
@@ -49,34 +59,46 @@ while(t <= N);
           ewls_covariance_matrix_trajectory(:,:,t-1), ...
           ewls_theta_trajectory(:,t-1), ...
           ewls_noise_variance_trajectory(:,:,t-1));
- 
+
+    ewls_theta_trajectory(:,t) = mround(ewls_theta_trajectory(:,t));
+    ewls_covariance_matrix_trajectory(:,:,t) = mround(ewls_covariance_matrix_trajectory(:,:,t));
+    ewls_error_trajectory(:,t) = mround(ewls_error_trajectory(:,t));
+    ewls_noise_variance_trajectory(:,:,t) = mround(ewls_noise_variance_trajectory(:,:,t));
  
   
-  if (t > 1000) 
+  if (t > 1000 && skip_detection == 0)     
+    %ewls_error_trajectory(:,t) = mround(ewls_error_trajectory(:,t));
     ewls_threshold_trajectory(1,t) = mu*sqrt(ewls_noise_variance_trajectory(1,1,t));
     ewls_threshold_trajectory(2,t) = mu*sqrt(ewls_noise_variance_trajectory(2,2,t));
     ewls_detection(:,t) = abs(ewls_error_trajectory(:,t)) > ewls_threshold_trajectory(:,t);
   endif
   
+  if(ewls_threshold_trajectory(1,1)>0)
+    x=5;
+  endif
 
   
   if ((ewls_detection(1,t) || ewls_detection(2,t)) && skip_detection == 0 )
     t0 = t-1;
     
+    ewls_noise_variance_trajectory(:,:,t0) = mround(ewls_noise_variance_trajectory(:,:,t0));
     if(check_stability_var (ewls_theta_trajectory(:,t0)) == 0)
       printf("Model ustable on: %d.\n", t0);
       ewls_theta_trajectory(:,t0) = ...
-          wwr_estimation(min([ewls_equivalent_window_length, t0]), ...
+          wwr_estimation2(min([ewls_equivalent_window_length, t0]), ...
           clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...
-          ewls_noise_variance_trajectory(:,:,t0-1));
-    endif
+          ewls_noise_variance_trajectory(:,:,t0));
+      unstable_model = unstable_model+1;
+    endif 
+
       
-    cov_matrix = zeros(2*model_rank, 2*model_rank);
-    theta_l = ewls_theta_trajectory(1:2*model_rank, t0);
-    theta_r = ewls_theta_trajectory(2*model_rank+1:end, t0);
-    theta = [theta_l, theta_r];
-    state_vector = ewls_regression(:, t0+1);
-    
+    cl_covariance_matrix = zeros(2*model_rank, 2*model_rank);
+    cl_theta_l = mround(ewls_theta_trajectory(1:2*model_rank, t0));
+    cl_theta_r = mround(ewls_theta_trajectory(2*model_rank+1:end, t0));
+    cl_theta = mround([cl_theta_l, cl_theta_r]);
+    cl_state_vector = mround(ewls_regression(:, t0+1));
+    cl_noise_variance = ewls_noise_variance_trajectory(:,:,t0);
+    cl_threshold = zeros(2,1);
     tk = t0;
     correct_samples = 0;
     alarm_length = 0;
@@ -84,72 +106,53 @@ while(t <= N);
     while (correct_samples < model_rank) && (alarm_length < max_alarm_length) && (tk+1 <= N)
       tk = tk+1;
 
-      kalman_output_prediction = mround(theta'*state_vector);
-      cl_error_trajectory(:,tk) = clear_signal(:,tk) - kalman_output_prediction;
-      state_vector = [ kalman_output_prediction; state_vector ];
-      kalman_h = mround(cov_matrix*theta);
-      cl_noise_variance_trajectory(:,:,tk) = mround(theta'*kalman_h + ewls_noise_variance_trajectory(:,:,t0));
-      cov_matrix = [cl_noise_variance_trajectory(:,:,tk), kalman_h'; kalman_h, cov_matrix];
+     [ cl_theta, ...
+       cl_state_vector, ...
+       cl_error, ...
+       cl_error_covariance, ...
+       cl_covariance_matrix ] = var_kalman_step( cl_theta,...
+                                                 cl_state_vector,...
+                                                 clear_signal(:,tk),...
+                                                 cl_covariance_matrix,...
+                                                 cl_noise_variance );
+     
+     [ cl_detection,...
+       cl_threshold ]         = var_kalman_detect( cl_error,...
+                                           cl_error_covariance );
+     
+     [ cl_state_vector,...
+       cl_covariance_matrix ] = var_kalman_update( cl_detection,...
+                                                   cl_state_vector,...
+                                                   cl_error,...
+                                                   cl_error_covariance,...
+                                                   cl_covariance_matrix );
       
-      theta = [theta; zeros(2,2)];
-      
-      if(cl_noise_variance_trajectory(1,1,tk) < 0)
-        printf("Oops, I should not be here! Negative var L: %d\n", cl_noise_variance_trajectory(1,1,tk));
-      endif
-      
-      if(cl_noise_variance_trajectory(2,2,tk) < 0)
-        printf("Oops, I should not be here! Negative var R: %d\n", cl_noise_variance_trajectory(2,2,tk));
-      endif
-      
-      cl_threshold_trajectory(1,tk) = mround(mu*sqrt(cl_noise_variance_trajectory(1,1,tk)));
-      cl_threshold_trajectory(2,tk) = mround(mu*sqrt(cl_noise_variance_trajectory(2,2,tk)));
-      cl_primary_detection(:,tk) = cl_primary_detection(:,tk) + abs(cl_error_trajectory(:,tk)) > cl_threshold_trajectory(:,tk);
-      
-      
-      L = mround(build_gain_vector(cl_primary_detection(:,tk) , cl_noise_variance_trajectory(:,:,tk), cov_matrix));
-      state_vector = state_vector + mround(L*cl_error_trajectory(:,tk));
-      cov_matrix = cov_matrix - mround(L*cl_noise_variance_trajectory(:,:,tk)*L');
-        
-      if(mround(cl_error_trajectory(:,tk)'*inv(cl_noise_variance_trajectory(:,:,tk))*cl_error_trajectory(:,tk)) <= mu^2)
+      if(cl_detection(1) == 0 && cl_detection(2)==0)
         correct_samples = correct_samples + 1;
       else 
         correct_samples = 0;
       endif
-    
+      
+      cl_primary_detection(:,tk) = cl_detection;
+      cl_error_covariance_trajectory(:,:,tk) = cl_error_covariance;
+      cl_threshold_trajectory(:,tk) = cl_threshold;
+      cl_error_trajectory(:,tk) = cl_error;
+      
       alarm_length = tk-t0;
   endwhile
     
-    [new_detection_l, false_l] =  fill_detection(cl_primary_detection(1,t0:tk), model_rank);
-    [new_detection_r, false_r] =  fill_detection(cl_primary_detection(2,t0:tk), model_rank);
+    [cl_final_detection(:,t0:tk), false_alarm] = var_false_alarms(cl_primary_detection(:,t0:tk));
     
-    if(false_l == 1)
-      printf("False positive at L\n");
-      cl_final_detection(1,t0:tk) = new_detection_l;
+    signal_reconstruction = retrieve_reconstruction(cl_state_vector);
+    if(false_alarm)
+       signal_reconstruction = var_kalman_interpolator( clear_signal,...
+                                                        cl_final_detection,...
+                                                        t0, tk,...
+                                                        mround([cl_theta_l, cl_theta_r]),...
+                                                        cl_noise_variance );
     endif
-    
-    if(false_r)
-      printf("False positive at L\n");
-      cl_final_detection(2,t0:tk) = new_detection_r;
-    endif
-    
-    cl_final_detection = (cl_primary_detection + cl_final_detection) > 0;
-    
-    %if(false_l || false_r)
-    %   variable_clear_signal(:,t0-model_rank+1:tk) = var_interpolator(...
-    %     [theta_l, theta_r],...
-    %      variable_clear_signal,...
-    %      d,...
-    %      model_rank,...
-    %      t0,...
-    %      tk,...
-    %      noise_variance_trajectory(:,:,t0)...
-    %    );
-    %else 
-      reconstruction_l = state_vector(1:2:end)';
-      reconstruction_r = state_vector(2:2:end)';  
-      signal_reconstruction = [flip(reconstruction_l); flip(reconstruction_r)]; 
-      clear_signal(:,t0-model_rank+1:tk) = signal_reconstruction;
-    %endif
+
+    clear_signal(:,t0+1:tk-correct_samples) = signal_reconstruction(:,1+model_rank:end-correct_samples);
     skip_detection = tk-t0;
     t = t0;
     
@@ -162,60 +165,17 @@ endwhile
 print_progress("Interpolation VAR", N, N, N/100);
 
 
+printf("Model was %d times unstable\n", unstable_model);
+printf("Negative var L count %d | Max: %d\n", ...
+  sum(squeeze(cl_error_covariance_trajectory(1,1,:)) < 0), ...
+  min(squeeze(cl_error_covariance_trajectory(1,1,:))));
+printf("Negative var R count %d | Max: %d\n", ...
+  sum(squeeze(cl_error_covariance_trajectory(2,2,:)) < 0),
+  min(squeeze(cl_error_covariance_trajectory(2,2,:))));
 
-ewls_model_plot(1, ...
-  input_signal,...
-  ewls_detection,
-  ewls_error_trajectory,...
-  ewls_threshold_trajectory, ...
-  ewls_noise_variance_trajectory,...
-  ewls_theta_trajectory)
-
-  
-cl_detection_plot(2, ...
-  ewls_detection,...
-  cl_primary_detection, ...
-  cl_final_detection);
-
-  
-ewls_model_plot(3, ...
-  input_signal,...
-  cl_primary_detection,
-  cl_error_trajectory,...
-  cl_threshold_trajectory, ...
-  cl_noise_variance_trajectory,...
-  ewls_theta_trajectory)
-  
-%{
-figure(1);
-subplot(3,2,1);
-plot(y_v(1,:)); grid on;  
-subplot(3,2,2);
-plot(y_v(2,:)); grid on; 
-subplot(3,2,3);
-plot(abs(error_trajectory(1,:))); hold on;
-plot(threshold_trajectory(1,:)); hold off; grid on; 
-subplot(3,2,4);
-plot(abs(error_trajectory(2,:))); hold on;  
-plot(threshold_trajectory(2,:)); hold off; grid on; 
-subplot(3,2,5);
-plot(d(1,:)); grid on; ylim([0 1.5]);
-subplot(3,2,6);
-plot(d(2,:)); grid on; ylim([0 1.5]);
-
-figure(3);
-subplot(4,1,1);
-plot(y_v(1,:)); hold on;
-%plot(secondary_clear_signal(1,:));
-plot(variable_clear_signal(1,:)); grid on; hold off;
-subplot(4,1,2);
-plot(y_v(1,:) - variable_clear_signal(1,:)); grid on;
-subplot(4,1,3);
-plot(y_v(2,:)); hold on;
-%plot(secondary_clear_signal(2,:));
-plot(variable_clear_signal(2,:)); grid on; hold off;
-subplot(4,1,4);
-plot(y_v(2,:) - variable_clear_signal(2,:)); grid on;
-
-%save_audio(current_file, variable_clear_signal', frequency, 1);
-$}
+printf("Detected at L: %d from %d | %d\n",...
+  sum(cl_final_detection(1,:)), length(cl_final_detection(1,:)), ...
+  (sum(cl_final_detection(1,:))/length(cl_final_detection(1,:)))*100);
+printf("Detected at R: %d from %d | %d\n",...
+  sum(cl_final_detection(2,:)), length(cl_final_detection(2,:)), ...
+  (sum(cl_final_detection(2,:))/length(cl_final_detection(2,:)))*100);

@@ -18,24 +18,34 @@ function [regression] = init_regression_vector(signal, r, t0);
 endfunction
 
 function [gain_vector] = build_gain_vector(detection, kalman_var, cov_matrix)
-      if(detection(1) == 0 && detection(2) == 0)
-        Ginv = inv(kalman_var);    
-      elseif (detection(1) == 0 && detection(2) != 0)
-        Ginv = [1/kalman_var(1,1), 0; 0 0];
-      elseif (detection(1) != 0 && detection(2) == 0)
-        Ginv = [0, 0; 0 1/kalman_var(2,2)];
+      ro1 = mround(kalman_var(1,1));
+      ro2 = mround(kalman_var(2,2));
+      det_ro = mround(det(mround(kalman_var)));
+      
+      ok_all = det_ro > 1e-12;
+      ok_1 = ro1 > 1e-12;
+      ok_2 = ro2 > 1e-12;      
+      ok_all = 1;
+      ok_1 = 1;
+      ok_2 = 1;
+      
+      if(detection(1) == 0 && detection(2) == 0 && ok_all)
+          Ginv = mround(mround(kalman_var)\eye(2));  
+      elseif (detection(1) == 0 && detection(2) != 0 && ok_1)
+        Ginv = mround([1/kalman_var(1,1), 0; 0 0]);
+      elseif (detection(1) != 0 && detection(2) == 0 && ok_2)
+        Ginv = mround([0, 0; 0 1/kalman_var(2,2)]);
       else
         Ginv = zeros(2,2);
       endif
       
-      gain_vector = cov_matrix(:,1:2)*Ginv;
+      gain_vector = mround(cov_matrix(:,1:2)*Ginv);
 endfunction
 
 function [signal_reconstruction] = retrieve_reconstruction(state_vector)
-  reconstruction_l = state_vector(1:2:end)';
-  reconstruction_r = state_vector(2:2:end)';
-  
-  signal_reconstruction = [flip(reconstruction_l); flip(reconstruction_r)]; 
+      reconstruction_l = state_vector(1:2:end)';
+      reconstruction_r = state_vector(2:2:end)';  
+      signal_reconstruction = [flip(reconstruction_l); flip(reconstruction_r)];   
 endfunction
 
 
@@ -63,30 +73,64 @@ function [reconstructed_signal] = var_interpolator(...
     noise_variance...
   )
     t0 = t_start;
+
+    cov_matrix = zeros(2*model_rank, 2*model_rank);
+    theta = mround(theta_init);
+    state_vector = mround(init_regression_vector(signal, model_rank, t0+1));
     
-    init_cov_matrix = zeros(2*model_rank, 2*model_rank);
-    theta = theta_init;
     tk = t0;
-    state_vector = init_state_vector(signal, model_rank, t0);
-    cov_matrix = init_cov_matrix;
+    correct_samples = 0;
+    alarm_length = 0;
 
-    for tk=t_start+1:t_end
-      kalman_output_prediction = theta'*state_vector;
-      kalman_error = signal(:,tk) - kalman_output_prediction;
-      state_vector = [ kalman_output_prediction; state_vector ];
-      kalman_h = cov_matrix*theta;
-      kalman_var = theta'*kalman_h + noise_variance;
-      cov_matrix = [kalman_var, kalman_h'; kalman_h, cov_matrix];
+    for tk=t0+1:t_end
+      kalman_output_prediction = mround(mround(theta')*mround(state_vector));
+      kalman_error = mround(mround(signal(:,tk)) - mround(kalman_output_prediction));
+      state_vector = mround([ kalman_output_prediction; state_vector ]);
+      kalman_noise_variance = ...
+        mround(...
+          mround(...
+            mround(theta')...
+            *...
+            mround(cov_matrix)...
+            *...
+            mround(theta)...
+          )...
+          + ...
+          mround(noise_variance)...
+        );
+        
+      cov_matrix = mround([...
+        kalman_noise_variance,  mround(mround(cov_matrix)*mround(theta))';...
+        mround(mround(cov_matrix)*mround(theta)), cov_matrix]);
       
-      theta = [theta; zeros(2,2)];
-      
-      L = build_gain_vector(detection(:,tk) , kalman_var, cov_matrix);
-      state_vector = state_vector + L*kalman_error;
-      cov_matrix = cov_matrix - L*kalman_var*L';
+      theta = mround([theta; zeros(2,2)]);
+          
+      L = mround(build_gain_vector(detection(:,tk) , kalman_noise_variance, cov_matrix));
+      state_vector = mround(state_vector + mround(L*kalman_error));
+      cov_matrix = mround(cov_matrix - mround(L*kalman_noise_variance*L'));
     endfor
-
     
     reconstructed_signal = retrieve_reconstruction(state_vector);
 endfunction
 
 
+      %{
+      if(cl_primary_detection(1,tk) == 0 && cl_primary_detection(2,tk) == 0)
+        Ginv = mround(inv(cl_noise_variance_trajectory(:,:,tk)));    
+        gain_vector = mround(cov_matrix(:,1:2)*Ginv);
+        state_vector = mround(state_vector + mround(gain_vector*cl_error_trajectory(:,tk)));
+        cov_matrix = mround(cov_matrix - mround(gain_vector*cl_noise_variance_trajectory(:,:,tk)*gain_vector'));
+      elseif (cl_primary_detection(1,tk) == 0 && cl_primary_detection(2,tk) != 0)
+        gain_vector = mround(mround((1/cl_noise_variance_trajectory(1,1,tk)))*cov_matrix(:,1));
+        state_vector = mround(state_vector + mround(gain_vector*cl_error_trajectory(1,tk)));
+        cov_matrix = mround(cov_matrix - mround(cl_noise_variance_trajectory(1,1,tk)*gain_vector*gain_vector'));
+      elseif (cl_primary_detection(1,tk) != 0 && cl_primary_detection(2,tk) == 0)
+        gain_vector = mround((1/cl_noise_variance_trajectory(2,2,tk))*cov_matrix(:,2));
+        state_vector = mround(state_vector + mround(gain_vector*cl_error_trajectory(2,tk)));
+        cov_matrix = mround(cov_matrix - mround(cl_noise_variance_trajectory(2,2,tk)*gain_vector*gain_vector'));
+      else
+        Ginv = zeros(2,2);
+        state_vector = state_vector;
+        cov_matrix = cov_matrix;
+      endif
+      %}
