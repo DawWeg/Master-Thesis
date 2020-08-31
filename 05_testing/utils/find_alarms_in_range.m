@@ -1,3 +1,4 @@
+
 function [alarms] = find_alarms_in_range(detection, range_start, range_end)
   alarms = zeros(2,range_end-range_start);
   alarm_pos = 1;
