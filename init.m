@@ -11,6 +11,8 @@ addpath("01_identification");
 addpath("02_model_stability");
 addpath("03_detection");
 addpath("04_interpolation");
+addpath("06_vector_extension");
+addpath("07_scalar");
 
 % Set workspace parameters
 

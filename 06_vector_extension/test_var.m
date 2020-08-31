@@ -2,8 +2,8 @@ run("init.m");
 source("06_vector_extension/vector_utils.m");
 source("06_vector_extension/var_kalman.m");
 
-current_file = filenames(1,:);
-[input_signal, frequency] = load_audio(current_file, 0.0, 0.5);
+current_file = filenames(3,:);
+[input_signal, frequency] = load_audio(current_file, 0.0, 5);
 input_signal = input_signal';
 N = length(input_signal(1,:));
 
@@ -179,3 +179,5 @@ printf("Detected at L: %d from %d | %d\n",...
 printf("Detected at R: %d from %d | %d\n",...
   sum(cl_final_detection(2,:)), length(cl_final_detection(2,:)), ...
   (sum(cl_final_detection(2,:))/length(cl_final_detection(2,:)))*100);
+
+save_audio(current_file, "VAR", clear_signal', frequency, 1);

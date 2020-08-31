@@ -34,7 +34,6 @@ while(t <= N);
     cl_corrupted_block_start = t;
     %%% Stability check
     if(!check_stability(ewls_coefficients_estimate(:,t-1), process_rank))  
-    disp('chui'); 
     ewls_coefficients_estimate(:,t-1) = levinson_durbin_estimation( ...
         min([ewls_equivalent_window_length, t-1]), ...
         cl_clear_signal(t-(min([ewls_equivalent_window_length, t-1]))+1:t-1));    
