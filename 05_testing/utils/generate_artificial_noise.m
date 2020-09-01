@@ -1,12 +1,13 @@
 function [noise, detection] = generate_artificial_noise(signal_length, skip, min_spacing, max_spacing)
   noise = zeros(signal_length,1);
   detection = zeros(signal_length,1);
-  [samples_original, frequency] = audioread("00_data/test_samples/original_1.wav");
-  [samples_clear, frequency] = audioread("00_data/test_samples/clear_1.wav");
-  pulse_noise = samples_original-samples_clear; 
-  pulse_noise = pulse_noise(250000:350000);
-  printf("Extracting noise samples from signal...\n");
-  alarms = find_alarms(abs(pulse_noise)>0);
+  %[samples_original, frequency] = audioread("00_data/test_samples/original_1.wav");
+  %[samples_clear, frequency] = audioread("00_data/test_samples/clear_1.wav");
+  %pulse_noise = samples_original-samples_clear; 
+  %pulse_noise = pulse_noise(250000:350000);
+  %printf("Extracting noise samples from signal...\n");
+  %alarms = find_alarms(abs(pulse_noise)>0);
+  load("00_data/input_samples/noise/sample_noise.m");
   alarm_count = length(alarms);
   
   i=skip + 1;

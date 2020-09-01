@@ -38,7 +38,7 @@ function [ clear_signal,...
   unstable_model = 0;
   
 while(t <= N);
-  print_progress("Interpolation VAR", t, N, N/100);
+  print_progress("VAR Impulse noise reduction", t, N, N/100);
   ewls_regression = init_regression_vector(clear_signal, model_rank, t);
   
   [ ewls_theta_current, ...
@@ -150,6 +150,6 @@ while(t <= N);
   
   t = t + 1;  
 endwhile
-print_progress("Interpolation VAR", N, N, N/100);
+print_progress("VAR Impulse noise reduction", N, N, N/100);
 
 endfunction

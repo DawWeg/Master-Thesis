@@ -5,21 +5,22 @@ function [ total_alarms_ideal,...
                                                                         detection_ideal,...
                                                                         detection_est)
   
+  noise = detection_ideal.*noise;
   ideal_noise_energy = sum(noise.^2);
   detection_and = (detection_est+detection_ideal) == 2;
   noise_detected_correctly = detection_and.*noise;
   est_noise_energy = sum(noise_detected_correctly.^2);
 
-  printf("Finding all alarms in ideal detection\n");
+  %printf("Finding all alarms in ideal detection\n");
   alarms_ideal = find_alarms(detection_ideal);
-  printf("Finding all alarms in estimated detection\n");
+  %printf("Finding all alarms in estimated detection\n");
   alarms_est = find_alarms(detection_est);
 
   similarity_based_indicator = 0;
   similarities = 0;
   N = length(alarms_est(1,:));
   for i=1:length(alarms_est(1,:))
-      print_progress("Single channel quantity test", i, N, N/100);
+      %print_progress("Single channel quantity test", i, N, N/100);
       est_start = alarms_est(1,i);
       est_end = alarms_est(2,i);
       ideal_alarams_in_range = find_alarms_in_range(detection_ideal, est_start, est_end);
@@ -35,7 +36,7 @@ function [ total_alarms_ideal,...
         similarities++;
       endfor
   endfor
-  print_progress("Single channel quantity test", i, N, N/100);
+  %print_progress("Single channel quantity test", i, N, N/100);
 
   if(similarities > 0)
     similarity_based_indicator = (similarity_based_indicator/similarities)*100;
