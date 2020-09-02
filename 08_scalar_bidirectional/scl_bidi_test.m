@@ -1,7 +1,7 @@
 run("init.m");
 
 current_file = filenames(1,:);
-[input_signal, frequency] = load_audio(current_file, 0.0, 5);
+[input_signal, frequency] = load_audio(current_file, 0.0, 0.5);
 
 %%% Unidirectional analysis
 %{
