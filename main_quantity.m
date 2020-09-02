@@ -2,6 +2,7 @@ run("init.m");
 source("06_vector_extension/vector_utils.m");
 source("06_vector_extension/var_kalman.m");
 global SCL_MODE = [1; 1];
+global BIDI_MODE = [2; 0; 2; 2];
 input_directory = "00_data/input_samples/clear/";
 filenames = [ ...
                       "Chopin_Gavrilov_1_Bflat_clear.wav";...
@@ -35,14 +36,18 @@ printf("VAR model analysis...\n");
   var_variance ] = VAR_ImpulseNoiseReduction(noisy_signal);
 
 
+[fb_clear_signal, fb_detection_signal] = SCL_BIDI_ImpulseNoiseReduction (noisy_signal);
+
 printf("Quantity analysis...\n");
 
 dual_channel_quantity_test( noise, detection_ideal, scl_detection_signal );
 dual_channel_quantity_test( noise, detection_ideal, var_detection_signal' );
+dual_channel_quantity_test( noise, detection_ideal, fb_detection_signal );
 
 save_audio(current_file, "Noisy", noisy_signal, frequency, 0);
 save_audio(current_file, "SCL", scl_clear_signal, frequency, 0);
 save_audio(current_file, "VAR", var_clear_signal', frequency, 0);
+save_audio(current_file, "FB", fb_clear_signal', frequency, 0);
 
 
 
