@@ -10,7 +10,7 @@ for t = 2:N
   if(l_detection_signal(t) == 1 && l_detection_signal(t-1) == 0 && !any(l_detection_signal(t-model_rank-alarm_expand:t-1)))
     l_detection_signal(t-alarm_expand:t-1) = 1;
   endif
-  if(r_detection_signal(t) == 0 && r_detection_signal(t-1) == 0 && !any(r_detection_signal(t+model_rank+alarm_expand:t+1)))
+  if(r_detection_signal(t) == 0 && r_detection_signal(t-1) == 1 && !any(r_detection_signal(t+model_rank+alarm_expand:t+1)))
     r_detection_signal(t+alarm_expand:t+1) = 1;
   endif
   if(mod(t,1000) == 0)

@@ -1,4 +1,4 @@
-function [input_signal, detection_signal, ewls_error_trajcetory, threshold_trajectory] = SCL_ImpulseNoiseReduction (input_signal)
+function [input_signal, detection_signal, ewls_error_trajcetory, threshold_trajectory, ewls_coefficients_estimate, ewls_noise_variance] = SCL_ImpulseNoiseReduction (input_signal)
   
   %%% Preparing variables
   global model_rank ewls_lambda ewls_initial_cov_matrix SCL_MODE mu max_corrupted_block_length;
@@ -35,7 +35,7 @@ function [input_signal, detection_signal, ewls_error_trajcetory, threshold_traje
     
       %%% Stability check
       if(!check_stability(ewls_coefficients_estimate(:,t-1), model_rank)) 
-      printf("Model unstable on: %d", t);  
+      printf("Model unstable on: %d.\n", t);  
       ewls_coefficients_estimate(:,t-1) = levinson_durbin_estimation( ...
         min([ewls_equivalent_window_length, t-1]), ...
         input_signal(t-(min([ewls_equivalent_window_length, t-1]))+1:t-1));    

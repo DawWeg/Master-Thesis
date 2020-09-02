@@ -9,7 +9,7 @@ load_audio_start_second = 0;
 load_audio_end_second = 0.5; %-1 for whole file
 
 %%% Reading input samples
-current_file = filenames(1,:);
+current_file = filenames(2,:);
 [input_signal, frequency] = load_audio(current_file, load_audio_start_second, load_audio_end_second);
 %%% Executing alogorithms
 

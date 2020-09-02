@@ -1,8 +1,8 @@
 run("init.m");
-source("06_vector_extension/vector_utils.m");
-source("06_vector_extension/var_kalman.m");
+source("07_vector/vector_utils.m");
+source("07_vector/var_kalman.m");
 
-current_file = filenames(3,:);
+current_file = filenames(2,:);
 [input_signal, frequency] = load_audio(current_file, 0.0, 5);
 input_signal = input_signal';
 N = length(input_signal(1,:));
