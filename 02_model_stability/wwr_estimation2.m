@@ -1,7 +1,14 @@
-function [coefficients_estimate] = wwr_estimation2 (N, input_signal, noise_variance)
-  global model_rank;  
+function [coefficients_estimate] = wwr_estimation2 (N, input_signal)
+  %{
+    Wielkosc N przyjmuje wartosc na podstawie równowaznej dlugosci zastosowanego okna wykladniczego.
+    Wielkosc input_signal o wymiarach N x 2 zawierajaca oba kanaly sygnalu wykorzystana jest do wyznaczania
+    lokalnych ocen macierzy autokowariancji. 
+    Implementacja oparta byla na uzupelnieniu 8.6 z ksiazki P.Stoica "System Identification".  
+  %}
+  global model_rank; % Wielkosc model_rank okreslajaca rzad wykorzystywanego modelu autoregresyjnego. Zwyczajowo 10.  
   coefficients_estimate = zeros(model_rank*4, 1);
-  input_signal = [zeros(2,model_rank), input_signal, zeros(2,model_rank)];
+  input_signal = [zeros(2,model_rank), input_signal, zeros(2,model_rank)]; % Nie bylismy pewni czy tutaj takze nalezalo poszerzac zerami wektor wejsciowy.
+  % Obliczanie lokalnych ocen macierzy kowariancji.
   R = zeros(2, 2, model_rank+1);
   for k = 1:model_rank+1
     for i = 1:N-k
@@ -11,6 +18,8 @@ function [coefficients_estimate] = wwr_estimation2 (N, input_signal, noise_varia
   endfor 
   %%% Starting conditions 
   A = -R(:,:,2)*inv(R(:,:,1));
+  % Taka struktura "macierzy" B wynika z koniecznosci jej obracania lecz z zachowaniem struktury pojedynczych komórek
+  % do czego zwykly flip() nie starczal.
   B = zeros(2,2,model_rank);
   B(:,:,1) = -R(:,:,2)'*inv(R(:,:,1));
   Q = R(:,:,1) + A*R(:,:,2)';

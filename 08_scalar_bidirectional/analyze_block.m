@@ -56,13 +56,13 @@ function [detection_signal_fb] = analyze_block (detection_signal_f, detection_si
   endif
   
   % Configurations D
-  if(BIDI_MODE(1) == 0)
+  if(BIDI_MODE(4) == 0)
     detection_signal_fb(min([alarm_indices_f(1), alarm_indices_b(1)]):max([alarm_indices_f(end), alarm_indices_b(end)])) = 1;
     return;
-  elseif(BIDI_MODE(1) == 1)
+  elseif(BIDI_MODE(4) == 1)
     detection_signal_fb(max([alarm_indices_f(1), alarm_indices_b(1)]):min([alarm_indices_f(end), alarm_indices_b(end)])) = bitand(detection_signal_f, detection_signal_b);
     return;
-  elseif(BIDI_MODE(1) == 2)      
+  elseif(BIDI_MODE(4) == 2)      
     detection_signal_fb(alarm_indices_f(1):alarm_indices_f(end)) = 1;      
     return;
   endif
