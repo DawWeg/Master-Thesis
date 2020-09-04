@@ -41,6 +41,7 @@ while(t <= N);
   print_progress("VAR Impulse noise reduction", t, N, N/100);
   ewls_regression = init_regression_vector(clear_signal, model_rank, t);
   
+  % EWLS VAR model 
   [ ewls_theta_current, ...
     ewls_covariance_matrix_current, ...
     ewls_error_current,  ...
@@ -51,8 +52,10 @@ while(t <= N);
           ewls_theta_previous, ...
           ewls_noise_variance_previous);
 
-  
-  if (t > 1000 && skip_detection == 0)     
+  % If model is in steady state (whole window is populated)
+  % And number of samples marked by closed loop detection as cleared is zeros
+  % Perform EWLS based detection
+  if (t > ewls_equivalent_window_length && skip_detection == 0)     
     ewls_threshold(1) = mu*sqrt(ewls_noise_variance_current(1,1));
     ewls_threshold(2) = mu*sqrt(ewls_noise_variance_current(2,2));
     ewls_detection = abs(ewls_error_current) > ewls_threshold;
@@ -62,9 +65,14 @@ while(t <= N);
     error(:,t) = ewls_error_current;
   endif
 
-  
+  % If any of two channels is marked as corrupted
+  % And number of samples marked by closed loop detection as cleared is zeros
+  % Perform kalman detection from time t = t-1
   if ((ewls_detection(1) || ewls_detection(2)) && skip_detection == 0 )
     t0 = t-1;
+    
+    % Check model stability and in case it is unstable reestimate coefficients
+    % using WWR algorithm
     if(check_stability_var (ewls_theta_previous) == 0)
       printf("Model ustable on: %d.\n", t0);
       ewls_theta_previous = ...
@@ -74,7 +82,7 @@ while(t <= N);
       unstable_model = unstable_model+1;
     endif 
 
-      
+    % Set up initial conditions for Kalman closed loop detection
     cl_covariance_matrix = zeros(2*model_rank, 2*model_rank);
     cl_theta_l = mround(ewls_theta_previous(1:2*model_rank));
     cl_theta_r = mround(ewls_theta_previous(2*model_rank+1:end));
@@ -86,9 +94,14 @@ while(t <= N);
     correct_samples = 0;
     alarm_length = 0;
 
+    % Perform detection until
+    % -> Number of correct samples in a row is equal to model rank
+    % -> Maximum alarm length is reached
+    % -> End of signal is rached
     while (correct_samples < model_rank) && (alarm_length < max_alarm_length) && (tk+1 <= N)
       tk = tk+1;
 
+     % Perform calculations for one step of kalman algorithm
      [ cl_theta, ...
        cl_state_vector, ...
        cl_error, ...
@@ -98,11 +111,13 @@ while(t <= N);
                                                  clear_signal(:,tk),...
                                                  cl_covariance_matrix,...
                                                  cl_noise_variance );
-     
+    
+     % Make decision on whether samples are corrupted or not
      [ cl_detection,...
        cl_threshold ]         = var_kalman_detect( cl_error,...
                                            cl_error_covariance );
-     
+                                           
+     % Update kalman state vector and covariance matrix 
      [ cl_state_vector,...
        cl_covariance_matrix ] = var_kalman_update( cl_detection,...
                                                    cl_state_vector,...
@@ -110,21 +125,29 @@ while(t <= N);
                                                    cl_error_covariance,...
                                                    cl_covariance_matrix );
       
+      % Samples on both channels are clear, mark this run as correct
+      % If not clear correct run counter
       if(cl_detection(1) == 0 && cl_detection(2)==0)
         correct_samples = correct_samples + 1;
       else 
         correct_samples = 0;
       endif
       
+      % Update trajectory vectors
       detection(:,tk) = cl_detection;
       variance(1,tk) = cl_error_covariance(1,1);
       variance(2,tk) = cl_error_covariance(2,2);
       error(:,tk) = cl_error;
   endwhile
-    
+    % Check if there were any false alarms during detection
+    % And fill extend detection signal
     [detection(:,t0:tk), false_alarm] = var_false_alarms(detection(:,t0:tk));
     
+    % Retrieve interpolation from Kalman state vector
     signal_reconstruction = retrieve_reconstruction(cl_state_vector);
+    
+    % If false alarm was detected run Kalman algorithm again
+    % but with defined detection signal
     if(false_alarm)
        signal_reconstruction = var_kalman_interpolator( clear_signal,...
                                                         detection,...
@@ -133,15 +156,21 @@ while(t <= N);
                                                         cl_noise_variance );
     endif
 
+    % Replace corrupted samples with their reconstruction
     clear_signal(:,t0+1:tk-correct_samples) = signal_reconstruction(:,1+model_rank:end-correct_samples);
+    
+    % Mark samples analyzed by Kalman algorithm as correct
     skip_detection = tk-t0;
     t = t0;
     
   else
     % If no alarm detected or skipping detection -> update models 
     if (skip_detection != 0)
+      % Decrease number of correct samples
       skip_detection = skip_detection - 1;
     endif
+    
+    % Prepare next step of EWLS algorithm
     ewls_theta_previous = ewls_theta_current;
     ewls_covariance_matrix_previous = ewls_covariance_matrix_current;
     ewls_error_previous = ewls_error_current;
