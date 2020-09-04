@@ -7,6 +7,7 @@ tic;
 % Add dependencies
 addpath("utilities");
 addpath("methods");
+addpath("00_data");
 addpath("01_identification");
 addpath("02_model_stability");
 addpath("03_detection");

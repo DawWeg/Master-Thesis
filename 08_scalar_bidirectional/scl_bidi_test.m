@@ -35,9 +35,21 @@ global SCL_MODE = [1; 1];
 %}
 global BIDI_MODE = [2; 0; 2; 2];
 clear_signal_fb = zeros(size(input_signal));
-detection_signal_fb = zeros(size(input_signal));
+detection_signal_fb = zeros(length(input_signal),1);
 [clear_signal_fb, detection_signal_fb] = SCL_BIDI_ImpulseNoiseReduction(input_signal);
 
-                                                                               
-
-                                                                               
+figure(1);
+subplot(4,1,1);
+plot(input_signal(:,1));
+hold on;
+plot(clear_signal_fb(:,1));
+hold off;
+subplot(4,1,2);
+plot(input_signal(:,2));
+hold on;
+plot(clear_signal_fb(:,2));
+hold off;                                                                          
+subplot(4,1,3);
+plot(abs(input_signal(:,1)-clear_signal_fb(:,1)));
+subplot(4,1,4);
+plot(abs(input_signal(:,2)-clear_signal_fb(:,2)));                                                                    
