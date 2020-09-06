@@ -17,6 +17,7 @@ addpath("05_testing/utils");
 addpath("06_vector_extension");
 addpath("07_scalar");
 addpath("08_scalar_bidirectional");
+addpath("10_bidirectional");
 
 % Set workspace parameters
 
