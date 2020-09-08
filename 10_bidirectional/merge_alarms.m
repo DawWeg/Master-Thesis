@@ -63,7 +63,14 @@ function [detection_signal_fb] = merge_alarms(detection_signal_f, detection_sign
             detection_signal_fb(block_start+alarm_indices_f(1)-1:block_start+alarm_indices_b(end)-1) = 1;
             t = block_end;
             break;
-          endif          
+          endif 
+        elseif(i == max_corrupted_block_length)
+          block_end = t+i;
+          alarm_indices_f = find(detection_signal_f(block_start:block_end));
+          alarm_indices_b = find(detection_signal_b(block_start:block_end));
+          detection_signal_fb(block_start+alarm_indices_f(1)-1:block_start+alarm_indices_b(end)-1) = 1;
+          t = block_end;
+          break;          
         endif
       endfor      
     endif    
