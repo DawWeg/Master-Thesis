@@ -81,11 +81,11 @@ function [detection_signal_fb] = merge_alarms_2(detection_signal_f, detection_si
             detection_signal_fb(alarm_start_f(1)-alarm_expand:alarm_start_f(1)) = detection_signal_f(alarm_start_f(1)-alarm_expand:alarm_start_f(1));           
             alarm_length = alarm_end_f(1) - alarm_start_f(1);
             if(alarm_length >= alarm_expand)
-              detection_signal_fb(block_start+alarm_indices_f(1):block_start+alarm_indices_f(1)+alarm_expand+1) = 1;
+              detection_signal_fb(alarm_start_f(1)+1:alarm_start_f(1)+alarm_expand) = 1;
             else
               for i = alarm_expand:-1:1
                 if(!any(detection_signal_f(block_start+alarm_indices_f(end)+1:block_start+alarm_indices_f(end)+model_rank+i-alarm_length-1)))
-                  detection_signal_fb(block_start+alarm_indices_f(1):block_start+alarm_indices_f(1)+i+1) = 1;
+                  detection_signal_fb(alarm_start_f(1)+1:alarm_start_f(1)+i) = 1;
                   break;
                 endif
               endfor  
