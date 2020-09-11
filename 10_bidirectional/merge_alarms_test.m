@@ -82,7 +82,8 @@ test_cases = {...
 num_cases = size(test_cases,2);
 for i=1:num_cases
   test_case = test_cases{i};
-  [result] = merge_alarms(test_case{2}, test_case{3});
+  %test_case = test_cases{9};
+  [result] = merge_alarms_2(test_case{2}, test_case{3});
   assert_equals(test_case{1}, test_case{4}, result);
 endfor
 
