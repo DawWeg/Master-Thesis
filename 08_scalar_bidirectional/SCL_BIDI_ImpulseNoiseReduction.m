@@ -39,7 +39,7 @@ function [clear_signal_fb, detection_signal_fb] = SCL_BIDI_ImpulseNoiseReduction
   ewls_coefficients_estimate_b = flip(ewls_coefficients_estimate_b,2);
   ewls_noise_variance_b = flip(ewls_noise_variance_b,1);
   detection_signal_fb = zeros(size(detection_signal_f));
-  %{ 
+  %
   %%% Expanding alarms
   [detection_signal_f(:,1), detection_signal_b(:,1)] = expand_alarms(detection_signal_f(:,1), detection_signal_b(:,1));
   [detection_signal_f(:,2), detection_signal_b(:,2)] = expand_alarms(detection_signal_f(:,2), detection_signal_b(:,2));
@@ -50,8 +50,8 @@ function [clear_signal_fb, detection_signal_fb] = SCL_BIDI_ImpulseNoiseReduction
   detection_signal_fb(:,2) = create_bidirectional_alarm(detection_signal_f(:,2), detection_signal_b(:,2));
   %}
   
-  detection_signal_fb(:,1) = merge_alarms(detection_signal_f(:,1), detection_signal_b(:,1));
-  detection_signal_fb(:,2) = merge_alarms(detection_signal_f(:,2), detection_signal_b(:,2));
+  %detection_signal_fb(:,1) = merge_alarms_2(detection_signal_f(:,1), detection_signal_b(:,1));
+  %detection_signal_fb(:,2) = merge_alarms_2(detection_signal_f(:,2), detection_signal_b(:,2));
   %%% Bidirectional interpolation
   
   clear_signal_fb = clear_signal_f;
