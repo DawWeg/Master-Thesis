@@ -1,4 +1,4 @@
-function [teta1x,teta2x] = wwr_estimation3(N, input_signal)
+function [theta] = wwr_estimation3(N, input_signal)
 
   global model_rank;
   r = model_rank;
@@ -212,7 +212,7 @@ function [teta1x,teta2x] = wwr_estimation3(N, input_signal)
     
     QQx = QQ(:,:,r);
     %-------------------------
-
+    theta = [teta1x; teta2x];
 %$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 end

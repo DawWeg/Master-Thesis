@@ -68,10 +68,9 @@ for t=2:N
     printf("Model ustable on: %d.\n", t);
     printf("EWLS model coefficients:\n");
     disp(theta_trajectory_recu(:,t));
-    [theta1, theta2] = ...
+    [theta_trajectory_recu(:,t)] = ...
         wwr_estimation3(min([ewls_equivalent_window_length, t]), ...
-        model_output(:,t-(min([ewls_equivalent_window_length, t]))+1:t));
-    theta_trajectory_recu(:,t-1) = [theta1; theta2]; 
+        model_output(:,t-(min([ewls_equivalent_window_length, t]))+1:t));    
     printf("Reestimated coefficients:\n");
     disp(theta_trajectory_recu(:,t));
   endif

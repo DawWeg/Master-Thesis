@@ -4,7 +4,9 @@ function [detection_signal_fb] = merge_alarms(detection_signal_f, detection_sign
   N = length(detection_signal_f);
   detection_signal_fb = zeros(1,N);
   detection_signal_f = expand_alarms_2(detection_signal_f);
-  detection_signal_b = expand_alarms_2(detection_signal_b);
+  detection_signal_b = expand_alarms_2(flip(detection_signal_b));
+  detection_signal_b = flip(detection_signal_b);
+
   t = 2;
   while t < N
     print_progress("Creating bidirectional alarm", t, N, N/100);
@@ -19,18 +21,18 @@ function [detection_signal_fb] = merge_alarms(detection_signal_f, detection_sign
           
           %%% Configurations C
           if(isempty(alarm_indices_f))
-            detection_signal_fb(block_start+alarm_indices_b(1)-1) = 1;           
+            detection_signal_fb(block_start+alarm_indices_b(end)-3) = 1;           
             alarm_length = alarm_indices_b(end)-alarm_indices_b(1);
-            if(alarm_length >= alarm_expand)
-              detection_signal_fb(block_start+alarm_indices_b(1):block_start+alarm_indices_b(1)+alarm_expand+1) = 1;
-            else
+            %if(alarm_length >= alarm_expand)
+            %  detection_signal_fb(block_start+alarm_indices_b(end)-5:block_start+alarm_indices_b(end)+alarm_expand+1) = 1;
+            %else
               for i = alarm_expand:-1:1
-                if(!any(detection_signal_b(alarm_indices_b(end)+1:alarm_indices_b(end)+model_rank+i-alarm_length-1)))
-                  detection_signal_fb(block_start+alarm_indices_b(1):block_start+alarm_indices_b(1)+i+1) = 1;
+                if(!any(detection_signal_b(block_start+alarm_indices_b(end)+1:block_start+alarm_indices_b(end)+model_rank+i-alarm_length-1)))
+                  detection_signal_fb(block_start+alarm_indices_b(end)-3-i:block_start+alarm_indices_b(end)+i-3) = 1;
                   break;
                 endif
               endfor  
-            endif
+            %endif
             t = block_end;
             break;         
           elseif(isempty(alarm_indices_b))
@@ -40,7 +42,7 @@ function [detection_signal_fb] = merge_alarms(detection_signal_f, detection_sign
               detection_signal_fb(block_start+alarm_indices_f(1):block_start+alarm_indices_f(1)+alarm_expand+1) = 1;
             else
               for i = alarm_expand:-1:1
-                if(!any(detection_signal_f(alarm_indices_f(end)+1:alarm_indices_f(end)+model_rank+i-alarm_length-1)))
+                if(!any(detection_signal_f(block_start+alarm_indices_f(end)+1:block_start+alarm_indices_f(end)+model_rank+i-alarm_length-1)))
                   detection_signal_fb(block_start+alarm_indices_f(1):block_start+alarm_indices_f(1)+i+1) = 1;
                   break;
                 endif
