@@ -1,16 +1,24 @@
 function [ clear_signal,...
            detection,...
            error,...
-           variance ] = VAR_ImpulseNoiseReduction(input_signal)
+           variance ] = VAR_ImpulseNoiseReduction(input_signal, detection)
   
   global model_rank ewls_lambda mu;
+  use_external_detection = 0;
+  if (nargin > 1)
+    use_external_detection = 1;
+  end
+  
   input_signal = input_signal';
   N = length(input_signal(1,:));
   Or = zeros(2*model_rank,1);
   Ir = eye(2*model_rank, 2*model_rank);
 
   clear_signal = input_signal;
-  detection = zeros(size(input_signal));
+  
+  if(!use_external_detection)
+    detection = zeros(size(input_signal));
+  end
   error = zeros(size(input_signal));
   variance = zeros(size(input_signal));
   
@@ -36,11 +44,16 @@ function [ clear_signal,...
   max_alarm_length = 100;
   skip_detection = 0;
   unstable_model = 0;
+  do_init_regression = 1;
   
 while(t <= N);
   print_progress("VAR Impulse noise reduction", t, N, N/100);
-  ewls_regression = init_regression_vector(clear_signal, model_rank, t);
-  
+  if(do_init_regression)
+    ewls_regression = init_regression_vector(clear_signal, model_rank, t);
+    do_init_regression = 0;
+  else
+    ewls_regression = [clear_signal(:,t-1); ewls_regression(1:end-2)];
+  endif
   % EWLS VAR model 
   [ ewls_theta_current, ...
     ewls_covariance_matrix_current, ...
@@ -58,13 +71,21 @@ while(t <= N);
   if (t > ewls_equivalent_window_length && skip_detection == 0)     
     ewls_threshold(1) = mu*sqrt(ewls_noise_variance_current(1,1));
     ewls_threshold(2) = mu*sqrt(ewls_noise_variance_current(2,2));
-    ewls_detection = abs(ewls_error_current) > ewls_threshold;
+    if(use_external_detection)
+      ewls_detection = detection(:,t);
+    else
+      ewls_detection = abs(ewls_error_current) > ewls_threshold;
+    endif
+    
     detection(:, t) = ewls_detection;
     variance(1, t) = ewls_noise_variance_current(1,1);
     variance(2, t) = ewls_noise_variance_current(2,2);
     error(:,t) = ewls_error_current;
   endif
 
+  if (mod(t,100)==0)
+    x=5;
+  endif
   % If any of two channels is marked as corrupted
   % And number of samples marked by closed loop detection as cleared is zeros
   % Perform kalman detection from time t = t-1
@@ -75,10 +96,14 @@ while(t <= N);
     % using WWR algorithm
     if(check_stability_var (ewls_theta_previous) == 0)
       printf("Model ustable on: %d.\n", t0);
-      ewls_theta_previous = ...
-          wwr_estimation2(min([ewls_equivalent_window_length, t0]), ...
-          clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...
-          ewls_noise_variance_previous );
+      [teta1x,teta2x] = wwr_estimation3(...
+          min([ewls_equivalent_window_length, t0]),...
+          clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0));
+      ewls_theta_previous = [teta1x; teta2x];
+      %ewls_theta_previous = ...
+      %    wwr_estimation2(min([ewls_equivalent_window_length, t0]), ...
+      %    clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...
+      %    ewls_noise_variance_previous );
       unstable_model = unstable_model+1;
     endif 
 
@@ -100,7 +125,7 @@ while(t <= N);
     % -> End of signal is rached
     while (correct_samples < model_rank) && (alarm_length < max_alarm_length) && (tk+1 <= N)
       tk = tk+1;
-
+     
      % Perform calculations for one step of kalman algorithm
      [ cl_theta, ...
        cl_state_vector, ...
@@ -116,7 +141,10 @@ while(t <= N);
      [ cl_detection,...
        cl_threshold ]         = var_kalman_detect( cl_error,...
                                            cl_error_covariance );
-                                           
+      if(use_external_detection)
+        cl_detection = detection(:,tk);
+      endif 
+     
      % Update kalman state vector and covariance matrix 
      [ cl_state_vector,...
        cl_covariance_matrix ] = var_kalman_update( cl_detection,...
@@ -139,22 +167,26 @@ while(t <= N);
       variance(2,tk) = cl_error_covariance(2,2);
       error(:,tk) = cl_error;
   endwhile
-    % Check if there were any false alarms during detection
-    % And fill extend detection signal
-    [detection(:,t0:tk), false_alarm] = var_false_alarms(detection(:,t0:tk));
     
     % Retrieve interpolation from Kalman state vector
     signal_reconstruction = retrieve_reconstruction(cl_state_vector);
     
-    % If false alarm was detected run Kalman algorithm again
-    % but with defined detection signal
-    if(false_alarm)
-       signal_reconstruction = var_kalman_interpolator( clear_signal,...
-                                                        detection,...
-                                                        t0, tk,...
-                                                        mround([cl_theta_l, cl_theta_r]),...
-                                                        cl_noise_variance );
-    endif
+    if(!use_external_detection)
+        % Check if there were any false alarms during detection
+        % And fill extend detection signal
+        [detection(:,t0:tk), false_alarm] = var_false_alarms(detection(:,t0:tk));
+       
+        % If false alarm was detected run Kalman algorithm again
+        % but with defined detection signal
+        if(false_alarm)
+           signal_reconstruction = var_kalman_interpolator( clear_signal,...
+                                                            detection,...
+                                                            t0, tk,...
+                                                            mround([cl_theta_l, cl_theta_r]),...
+                                                            cl_noise_variance );
+        endif
+    end
+
 
     % Replace corrupted samples with their reconstruction
     clear_signal(:,t0+1:tk-correct_samples) = signal_reconstruction(:,1+model_rank:end-correct_samples);
@@ -162,7 +194,7 @@ while(t <= N);
     % Mark samples analyzed by Kalman algorithm as correct
     skip_detection = tk-t0;
     t = t0;
-    
+    do_init_regression = 1;
   else
     % If no alarm detected or skipping detection -> update models 
     if (skip_detection != 0)

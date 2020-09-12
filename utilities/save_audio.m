@@ -1,5 +1,5 @@
-function save_audio(input_filename, method_name, samples, frequency, save_with_id)
-  global output_directory;
+function save_audio(method_name, samples, save_with_id)
+  global output_directory input_filename frequency;
   datetime = int32(clock());
   id = "";
   if save_with_id

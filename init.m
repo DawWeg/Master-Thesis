@@ -17,8 +17,9 @@ addpath("05_testing/utils");
 addpath("06_vector_extension");
 addpath("07_scalar");
 addpath("08_scalar_bidirectional");
+addpath("09_vector_bidirectional");
 addpath("10_bidirectional");
-
+source("06_vector_extension/var_kalman.m");
 % Set workspace parameters
 
 global output_directory="00_data/output_samples/";
@@ -45,7 +46,8 @@ global detection_delay = 10*model_rank;
 %%% Bidirectional
 global alarm_expand = 3;
 
-
+global SCL_MODE = [1; 1];
+global BIDI_MODE = [2; 0; 2; 2];
 % Input filenames
 global filenames = [ ...
                       "Chopin_Etiuda_Op_25_nr_8.WAV";...

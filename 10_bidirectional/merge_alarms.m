@@ -8,7 +8,7 @@ function [detection_signal_fb] = merge_alarms(detection_signal_f, detection_sign
   detection_signal_b = flip(detection_signal_b);
 
   t = 2;
-  while t < N
+  while t < N-max_corrupted_block_length
     print_progress("Creating bidirectional alarm", t, N, N/100);
     if((detection_signal_f(t) == 1 && detection_signal_f(t-1) == 0) || (detection_signal_b(t) == 1 && detection_signal_b(t-1) == 0))
       block_start = t - model_rank;

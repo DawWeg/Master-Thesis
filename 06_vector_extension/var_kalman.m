@@ -44,6 +44,12 @@ function [  theta, ...
   prediction_error_covariance = mround(...
       theta'*covariance_matrix*theta + noise_variance...
   );
+  if(prediction_error_covariance(1,1) < 0 )
+    prediction_error_covariance(1,1) = 0;
+  endif
+  if(prediction_error_covariance(2,2) < 0 )
+    prediction_error_covariance(2,2) = 1;
+  endif
   covariance_matrix = mround(...
     [...
           prediction_error_covariance,      mround(covariance_matrix*theta)';...
@@ -136,8 +142,15 @@ function [gain_vector] = build_gain_vector(detection, kalman_var, cov_matrix)
       else
         Ginv = zeros(2,2);
       endif
-      
+
       gain_vector = mround(cov_matrix(:,1:2)*Ginv);
+      
+      if(gain_vector(1,1) > 1)
+        gain_vector = 1;
+      endif
+      if(gain_vector(2,2) > 1)
+        gain_vector = 1;
+      endif
 endfunction
 
 
