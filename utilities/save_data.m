@@ -8,6 +8,7 @@ function save_data(input_filename, method_name, data, save_with_id)
                   datetime(4), datetime(5), datetime(6)); 
   endif
   [dir, name, ext] = fileparts(input_filename);
+  mkdir([output_directory "data/"]);
   filename = strcat([output_directory,"data/",id, method_name, "_", name, ".dat"]);
   save("-binary", filename, "data"); 
   printf("Saved data file as %s\n", filename);

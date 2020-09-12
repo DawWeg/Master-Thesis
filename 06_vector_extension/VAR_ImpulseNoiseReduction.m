@@ -1,24 +1,25 @@
 function [ clear_signal,...
            detection,...
            error,...
-           variance ] = VAR_ImpulseNoiseReduction(input_signal, detection)
+           variance ] = VAR_ImpulseNoiseReduction(input_signal, input_detection)
   
   global model_rank ewls_lambda mu;
   use_external_detection = 0;
   if (nargin > 1)
     use_external_detection = 1;
+    detection = input_detection;
   end
   
   input_signal = input_signal';
+  if !use_external_detection
+    detection = zeros(size(input_signal));
+  endif
   N = length(input_signal(1,:));
   Or = zeros(2*model_rank,1);
   Ir = eye(2*model_rank, 2*model_rank);
 
   clear_signal = input_signal;
   
-  if(!use_external_detection)
-    detection = zeros(size(input_signal));
-  end
   error = zeros(size(input_signal));
   variance = zeros(size(input_signal));
   
@@ -45,15 +46,21 @@ function [ clear_signal,...
   skip_detection = 0;
   unstable_model = 0;
   do_init_regression = 1;
-  
+  regrssion_time = 0;
+  ewls_time = 0;
+  kalman_time = 0;
+  iter = 0;
+
 while(t <= N);
   print_progress("VAR Impulse noise reduction", t, N, N/100);
+  
   if(do_init_regression)
     ewls_regression = init_regression_vector(clear_signal, model_rank, t);
     do_init_regression = 0;
   else
     ewls_regression = [clear_signal(:,t-1); ewls_regression(1:end-2)];
   endif
+
   % EWLS VAR model 
   [ ewls_theta_current, ...
     ewls_covariance_matrix_current, ...
@@ -64,28 +71,27 @@ while(t <= N);
           ewls_covariance_matrix_previous, ...
           ewls_theta_previous, ...
           ewls_noise_variance_previous);
-
+  
   % If model is in steady state (whole window is populated)
   % And number of samples marked by closed loop detection as cleared is zeros
   % Perform EWLS based detection
   if (t > ewls_equivalent_window_length && skip_detection == 0)     
-    ewls_threshold(1) = mu*sqrt(ewls_noise_variance_current(1,1));
-    ewls_threshold(2) = mu*sqrt(ewls_noise_variance_current(2,2));
+
     if(use_external_detection)
       ewls_detection = detection(:,t);
     else
+      ewls_threshold(1) = mu*sqrt(ewls_noise_variance_current(1,1));
+      ewls_threshold(2) = mu*sqrt(ewls_noise_variance_current(2,2));
       ewls_detection = abs(ewls_error_current) > ewls_threshold;
+      detection(:, t) = ewls_detection;
     endif
     
-    detection(:, t) = ewls_detection;
+   
     variance(1, t) = ewls_noise_variance_current(1,1);
     variance(2, t) = ewls_noise_variance_current(2,2);
     error(:,t) = ewls_error_current;
   endif
 
-  if (mod(t,100)==0)
-    x=5;
-  endif
   % If any of two channels is marked as corrupted
   % And number of samples marked by closed loop detection as cleared is zeros
   % Perform kalman detection from time t = t-1
@@ -104,7 +110,6 @@ while(t <= N);
       %    wwr_estimation2(min([ewls_equivalent_window_length, t0]), ...
       %    clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...
       %    ewls_noise_variance_previous );
-      unstable_model = unstable_model+1;
     endif 
 
     % Set up initial conditions for Kalman closed loop detection
@@ -162,7 +167,9 @@ while(t <= N);
       endif
       
       % Update trajectory vectors
-      detection(:,tk) = cl_detection;
+      if !use_external_detection
+        detection(:,tk) = cl_detection;
+      endif
       variance(1,tk) = cl_error_covariance(1,1);
       variance(2,tk) = cl_error_covariance(2,2);
       error(:,tk) = cl_error;
@@ -208,7 +215,6 @@ while(t <= N);
     ewls_error_previous = ewls_error_current;
     ewls_noise_variance_previous = ewls_noise_variance_current;
   endif
-  
   t = t + 1;  
 endwhile
 print_progress("VAR Impulse noise reduction", N, N, N/100);
