@@ -46,8 +46,6 @@ global detection_delay = 10*model_rank;
 %%% Bidirectional
 global alarm_expand = 3;
 
-global SCL_MODE = [1; 1];
-global BIDI_MODE = [2; 0; 2; 2];
 % Input filenames
 global filenames = [ ...
                       "Chopin_Etiuda_Op_25_nr_8.WAV";...
