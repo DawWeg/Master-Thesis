@@ -12,7 +12,7 @@ model_rank = 10;
 should_plot = 1;
 should_save_audio = 1;
 load_audio_start_second = 0;
-load_audio_end_second = 0.5; %-1 for whole file
+load_audio_end_second = 5; %-1 for whole file
 
 %%% Reading input samples
 global input_filename;
