@@ -1,2 +1,5 @@
+00_data/output_samples/*
+00_data/output_samples/audio/*
+00_data/output_samples/data/*
 output_samples/*
 local*
