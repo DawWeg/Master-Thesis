@@ -2,14 +2,15 @@ run("init.m");
 
 global frequency;
 global input_filename = filenames(1,:);
-[input_signal, frequency] = load_audio(input_filename, 0.0, 0.5);
+[input_signal, frequency] = load_audio(input_filename, 0.0, 5);
 
 
 clear_signal_fb = zeros(size(input_signal));
 detection_signal_fb = zeros(length(input_signal),1);
 
 profile on;
-[clear_signal_fb, clear_signal_f, clear_signal_b] = SCL_BIDI_ImpulseNoiseReduction(input_signal);
+dbstop("SCL_BIDI_ImpulseNoiseReduction");
+[clear_signal_fb, clear_signal_f, clear_signal_b, clear_signal_fbf, clear_signal_fbb] = SCL_BIDI_ImpulseNoiseReduction(input_signal);
 profile off;
 
 figure(1);
