@@ -2,7 +2,7 @@ run("init.m");
 
 global frequency;
 global input_filename = filenames(1,:);
-[input_signal, frequency] = load_audio(input_filename, 0.0, 0.5);
+[input_signal, frequency] = load_audio(input_filename, 0.0, 5);
 
 
 clear_signal_fb = zeros(size(input_signal));
