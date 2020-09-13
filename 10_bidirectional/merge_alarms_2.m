@@ -150,17 +150,23 @@ function [detection_signal_fb] = merge_alarms_2(detection_signal_f, detection_si
           block_end = t+i;
           alarm_indices_f = find(detection_signal_f(block_start:block_end));
           alarm_indices_b = find(detection_signal_b(block_start:block_end));
-          detection_signal_fb(block_start+alarm_indices_f(1)-1:block_start+alarm_indices_b(end)-1) = 1;
-            if(length(ex_alarm_start_f) > 1 && t == ex_alarm_start_f(1))              
-              alarm_start_f = alarm_start_f(2:end);
-              ex_alarm_start_f = ex_alarm_start_f(2:end);
-              alarm_end_f = alarm_end_f(2:end);
-            endif
-            if(length(ex_alarm_end_b) > 1 && t+i-1 == ex_alarm_end_b(1))
-              alarm_end_b = alarm_end_b(2:end);
-              ex_alarm_end_b = ex_alarm_end_b(2:end);
-              alarm_start_b = alarm_start_b(2:end);
-            endif   
+          if(!any(alarm_indices_f))
+            detection_signal_fb(block_start+alarm_indices_b(1)-1:block_start+alarm_indices_b(end)-1) = 1;
+          elseif(!any(alarm_indices_b))
+            detection_signal_fb(block_start+alarm_indices_f(1)-1:block_start+alarm_indices_f(end)-1) = 1;
+          else
+            detection_signal_fb(block_start+alarm_indices_f(1)-1:block_start+alarm_indices_b(end)-1) = 1;
+          endif          
+          if(length(ex_alarm_start_f) > 1 && t == ex_alarm_start_f(1))              
+            alarm_start_f = alarm_start_f(2:end);
+            ex_alarm_start_f = ex_alarm_start_f(2:end);
+            alarm_end_f = alarm_end_f(2:end);
+          endif
+           if(length(ex_alarm_end_b) > 1 && t+i-1 == ex_alarm_end_b(1))
+            alarm_end_b = alarm_end_b(2:end);
+            ex_alarm_end_b = ex_alarm_end_b(2:end);
+            alarm_start_b = alarm_start_b(2:end);
+          endif   
           t = block_end;
           break;          
         endif
