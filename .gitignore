@@ -3,3 +3,5 @@
 00_data/output_samples/data/*
 output_samples/*
 local*
+*.wav
+*.dat
