@@ -1,6 +1,7 @@
 function [data_save_filename] = get_data_save_filename(method_name, ext)
   global output_directory input_filename;
-
+  mkdir([output_directory "data/"]);
+  mkdir([output_directory "audio/"]);
   id = "";
   [dir, name, ext] = fileparts(input_filename);
   if nargin<2

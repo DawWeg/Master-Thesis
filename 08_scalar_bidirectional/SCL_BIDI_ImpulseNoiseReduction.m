@@ -79,5 +79,8 @@ function [clear_signal_fb, clear_signal_f, clear_signal_b] = SCL_BIDI_ImpulseNoi
                                                 ewls_coefficients_estimate_b(:,:,2), ...
                                                 ewls_noise_variance_f(:,2), ...
                                                 ewls_noise_variance_b(:,2));
-                                                
+  
+  save_audio("SCL_FB", clear_signal_fb, 0);                                          
+  save_audio("SCL_FBB", clear_signal_fbb, 0);                                          
+  save_audio("SCL_FBF", clear_signal_fbf, 0);                                          
 endfunction
