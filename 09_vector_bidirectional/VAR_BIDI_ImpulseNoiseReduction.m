@@ -61,8 +61,9 @@ function [clear_fb, clear_f, clear_b] = VAR_BIDI_ImpulseNoiseReduction(input_sig
   [clear_fb(2,:)] = merge_interpolations( clear_fb(2,:), d_fb(2,:),...
                                           clear_fbf(2,:), var_fbf(2,:),...
                                           clear_fbb(2,:), var_fbb(2,:));
+                                          
   save_audio("VAR_FB", clear_fb', 0);
-  
+  save("-binary", get_data_save_filename("VAR_FB"), "clear_fb", "d_fb");
   clear_f = clear_f';
   clear_b = clear_b';
   clear_fb = clear_fb';

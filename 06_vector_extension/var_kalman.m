@@ -95,6 +95,85 @@ function [ state_vector,...
                                                     error,...
                                                     error_covariance,...
                                                     covariance_matrix )
+     
+  if(detection(1) == 0 && detection(2) == 0)
+    % Both OK
+        
+    %odwracanie macierzy 2x2
+    GD = [error_covariance(2,2) -error_covariance(1,2); -error_covariance(2,1) error_covariance(1,1)];
+    G1 = (1/det(error_covariance))*GD;
+    Lr  = covariance_matrix(:,1:2)*G1;
+                        
+    %ze wzglêdu na b³edy numeryczne
+    %wymuszenie '1'
+    Lr(1:2,1:2) = eye(2,2);
+    Lr = mround(Lr);
+    state_vector = state_vector + Lr*error;    
+                        
+   %ze wzglêdu na b³edy numeryczne
+   %wymuszenie dodatnio okreœlonoœci
+   WW = length(covariance_matrix);
+   CCx = [eye(2,2) zeros(2,WW-2)];
+   ZZ = (eye(WW,WW) - Lr*CCx);
+   covariance_matrix = ZZ*covariance_matrix*ZZ';     
+   covariance_matrix(1:2,1:2) = zeros(2,2);
+
+   %kolejne zabezpieczenie od œmieci na ogonach liczb
+   state_vector = mround(state_vector);
+   covariance_matrix = mround(covariance_matrix);
+      
+  elseif (detection(1) == 0 && detection(2) != 0)
+    % Right not ok
+    lr   = (1/error_covariance(1,1))*(covariance_matrix(:,1));
+    %ze wzglêdu na b³edy numeryczne
+    %wymuszenie '1'
+    lr(1) = 1;
+    lr(1) = mround(lr(1));
+    state_vector = state_vector + lr*error(1);
+    
+    %--------------------------------------------------
+    %ze wzglêdu na b³edy numeryczne
+    %wymuszenie dodatnio okreœlonoœci
+    WW = length(covariance_matrix);
+    CCx = [1 0 zeros(1,WW-2)];    
+    ZZ  = (eye(WW,WW) - lr*CCx);
+    covariance_matrix = ZZ*covariance_matrix*ZZ';     
+    covariance_matrix(1,1) = 0;
+    %--------------------------------------------------
+    %kolejne zabezpieczenie od œmieci na ogonach liczb
+    state_vector = mround(state_vector);
+    covariance_matrix = mround(covariance_matrix);            
+    
+  elseif (detection(1) != 0 && detection(2) == 0 )
+    % Left not ok
+    lr   = (1/error_covariance(2,2))*(covariance_matrix(:,2));
+    %ze wzglêdu na b³edy numeryczne
+    %wymuszenie '1'
+    lr(2) = 1;
+    lr(2) = mround(lr(2));
+    state_vector = state_vector + lr*error(2);
+    
+    %--------------------------------------------------
+    %ze wzglêdu na b³edy numeryczne
+    %wymuszenie dodatnio okreœlonoœci
+    WW = length(covariance_matrix);
+    CCx = [0 1 zeros(1,WW-2)];    
+    ZZ  = (eye(WW,WW) - lr*CCx);
+    covariance_matrix = ZZ*covariance_matrix*ZZ';     
+    covariance_matrix(2,2) = 0;
+    %--------------------------------------------------
+    %kolejne zabezpieczenie od œmieci na ogonach liczb
+    state_vector = mround(state_vector);
+    covariance_matrix = mround(covariance_matrix); 
+  else
+    % Both not ok
+    state_vector = mround(state_vector);
+    covariance_matrix = mround(covariance_matrix);
+  endif
+      
+     
+     
+  %{
      L = mround(...
             build_gain_vector(...
                 detection,... 
@@ -105,9 +184,10 @@ function [ state_vector,...
           
      state_vector = mround(state_vector + mround(L*error));
      covariance_matrix = mround(covariance_matrix - mround(L*error_covariance*L'));
+     %}
 endfunction
 
-
+%{
 % Create gain vector based on current Kalman algorithm results
 % Args:
 %   @detection    - Current detection
@@ -133,26 +213,9 @@ function [gain_vector] = build_gain_vector(detection, kalman_var, cov_matrix)
       ok_1 = 1;
       ok_2 = 1;
       
-      if(detection(1) == 0 && detection(2) == 0 && ok_all)
-          Ginv = mround(mround(kalman_var)\eye(2));  
-      elseif (detection(1) == 0 && detection(2) != 0 && ok_1)
-        Ginv = mround([1/kalman_var(1,1), 0; 0 0]);
-      elseif (detection(1) != 0 && detection(2) == 0 && ok_2)
-        Ginv = mround([0, 0; 0 1/kalman_var(2,2)]);
-      else
-        Ginv = zeros(2,2);
-      endif
 
-      gain_vector = mround(cov_matrix(:,1:2)*Ginv);
-      
-      if(gain_vector(1,1) > 1)
-        gain_vector = 1;
-      endif
-      if(gain_vector(2,2) > 1)
-        gain_vector = 1;
-      endif
 endfunction
-
+%}
 
 % 2 channel variant of false alarms detection
 % Args:

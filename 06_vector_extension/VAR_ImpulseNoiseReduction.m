@@ -105,6 +105,8 @@ while(t <= N);
       ewls_theta_previous = wwr_estimation3(...
           min([ewls_equivalent_window_length, t0]),...
           clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0));
+      unstable_model++;
+      
       %ewls_theta_previous = ...
       %    wwr_estimation2(min([ewls_equivalent_window_length, t0]), ...
       %    clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...
@@ -127,7 +129,7 @@ while(t <= N);
     % -> Number of correct samples in a row is equal to model rank
     % -> Maximum alarm length is reached
     % -> End of signal is rached
-    while (correct_samples < model_rank) && (alarm_length < max_alarm_length) && (tk+1 <= N)
+    while (correct_samples < model_rank) && (use_external_detection || (alarm_length < max_alarm_length)) && (tk+1 <= N)
       tk = tk+1;
      
      % Perform calculations for one step of kalman algorithm
@@ -172,6 +174,7 @@ while(t <= N);
       variance(1,tk) = cl_error_covariance(1,1);
       variance(2,tk) = cl_error_covariance(2,2);
       error(:,tk) = cl_error;
+      alarm_length = tk - t0;
   endwhile
     
     % Retrieve interpolation from Kalman state vector
@@ -191,7 +194,7 @@ while(t <= N);
                                                             mround([cl_theta_l, cl_theta_r]),...
                                                             cl_noise_variance );
         endif
-    end
+    endif
 
 
     % Replace corrupted samples with their reconstruction
