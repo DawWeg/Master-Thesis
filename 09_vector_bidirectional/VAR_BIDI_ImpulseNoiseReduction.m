@@ -14,6 +14,8 @@ function [clear_fb, clear_f, clear_b] = VAR_BIDI_ImpulseNoiseReduction(input_sig
   % Flip backward detection
   clear_b = flip(clear_b')';
   d_b = flip(d_b')';
+  err_b = flip(err_b')';
+  var_b = flip(var_b')';
   save("-binary", get_data_save_filename("VAR_B"), "clear_b", "d_b", "err_b", "var_b");
   save_audio("VAR_B", clear_b', 0);
   clear err_b var_b;
@@ -39,6 +41,7 @@ function [clear_fb, clear_f, clear_b] = VAR_BIDI_ImpulseNoiseReduction(input_sig
   % Flip backward results
   clear_fbb = flip(clear_fbb')';
   var_fbb = flip(var_fbb')';
+  d_fbb = flip(d_fbb')';
   save("-binary", get_data_save_filename("VAR_FBB"), "clear_fbb", "d_fbb", "err_fbb", "var_fbb");
   save_audio("VAR_FBB", clear_fbb', 0);
   clear err_fbb;

@@ -3,7 +3,7 @@ function [ clear_signal,...
            error,...
            variance ] = VAR_ImpulseNoiseReduction(input_signal, input_detection)
   
-  global model_rank ewls_lambda mu;
+  global model_rank ewls_lambda mu max_corrupted_block_length;
   use_external_detection = 0;
   if (nargin > 1)
     use_external_detection = 1;
@@ -42,7 +42,7 @@ function [ clear_signal,...
   ewls_equivalent_window_length = round((1+ewls_lambda)/(1-ewls_lambda));
   
   t = model_rank+1;
-  max_alarm_length = 100;
+  max_alarm_length = max_corrupted_block_length;
   skip_detection = 0;
   unstable_model = 0;
   do_init_regression = 1;
@@ -102,10 +102,9 @@ while(t <= N);
     % using WWR algorithm
     if(check_stability_var (ewls_theta_previous) == 0)
       printf("Model ustable on: %d.\n", t0);
-      [teta1x,teta2x] = wwr_estimation3(...
+      ewls_theta_previous = wwr_estimation3(...
           min([ewls_equivalent_window_length, t0]),...
           clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0));
-      ewls_theta_previous = [teta1x; teta2x];
       %ewls_theta_previous = ...
       %    wwr_estimation2(min([ewls_equivalent_window_length, t0]), ...
       %    clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...

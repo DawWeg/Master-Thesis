@@ -18,7 +18,7 @@ noise_min_spacing = 10; noise_max_spacing = 1000;
 [noise, detection_ideal] =  generate_dual_artificial_noise( length(input_signal),... 
                                                             noise_start,...
                                                             noise_min_spacing,... 
-                                                            noise_max_spacing);
+                                                            noise_max_spacing);%5
 
 input_norm_factor = 1/max(max(input_signal));
 noise_norm_factor = 1/max(max(noise));
@@ -59,23 +59,23 @@ f_var_fbf   = [ output_directory 'audio/VAR_FBF_' name ext];
 %  var_energy_based_indicator,...
 %  var_similarity_based_indicator ] = dual_channel_quantity_test( noise, detection_ideal, var_detection_signal' );
 
-start = 1*frequency;
-finish = 9*frequency;
+%start = 0.1*frequency;
+%finish = 0.2*frequency;
 
-odg.clear    = PQevalAudio (f_clear, f_clear, start, finish);
-odg.noisy    = PQevalAudio (f_clear, f_noisy, start, finish);
+odg.clear    = PQevalAudio (f_clear, f_clear);
+odg.noisy    = PQevalAudio (f_clear, f_noisy);
 
-odg.scl_f    = PQevalAudio (f_clear, f_scl_f, start, finish);
-odg.scl_b    = PQevalAudio (f_clear, f_scl_b, start, finish);
-odg.scl_fb   = PQevalAudio (f_clear, f_scl_fb, start, finish);
-odg.scl_fbb  = PQevalAudio (f_clear, f_scl_fbb, start, finish);
-odg.scl_fbf  = PQevalAudio (f_clear, f_scl_fbf, start, finish);
+odg.scl_f    = PQevalAudio (f_clear, f_scl_f);
+odg.scl_b    = PQevalAudio (f_clear, f_scl_b);
+odg.scl_fb   = PQevalAudio (f_clear, f_scl_fb);
+odg.scl_fbb  = PQevalAudio (f_clear, f_scl_fbb);
+odg.scl_fbf  = PQevalAudio (f_clear, f_scl_fbf);
 
-odg.var_f    = PQevalAudio (f_clear, f_var_f, start, finish);
-odg.var_b    = PQevalAudio (f_clear, f_var_b, start, finish);
-odg.var_fb   = PQevalAudio (f_clear, f_var_fb, start, finish);
-odg.var_fbb  = PQevalAudio (f_clear, f_var_fbb, start, finish);
-odg.var_fbf  = PQevalAudio (f_clear, f_var_fbf, start, finish);
+odg.var_f    = PQevalAudio (f_clear, f_var_f);
+odg.var_b    = PQevalAudio (f_clear, f_var_b);
+odg.var_fb   = PQevalAudio (f_clear, f_var_fb);
+odg.var_fbb  = PQevalAudio (f_clear, f_var_fbb);
+odg.var_fbf  = PQevalAudio (f_clear, f_var_fbf);
 
 save("-text", [output_directory, "PEAQ_Report.txt"], "odg");
 disp(odg);

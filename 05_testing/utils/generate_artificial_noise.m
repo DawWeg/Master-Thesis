@@ -11,7 +11,7 @@ function [noise, detection] = generate_artificial_noise(signal_length, skip, min
   alarm_count = length(alarms);
   
   i=skip + 1;
-  while i<signal_length
+  while i<signal_length-skip
     alarm_num = floor(rand()*alarm_count+1);
     alarm_start = alarms(1, alarm_num);
     alarm_end = alarms(2, alarm_num);
