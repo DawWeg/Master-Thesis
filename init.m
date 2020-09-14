@@ -19,6 +19,7 @@ addpath("07_scalar");
 addpath("08_scalar_bidirectional");
 addpath("09_vector_bidirectional");
 addpath("10_bidirectional");
+addpath("audio_resto/octave_clicks");
 source("06_vector_extension/var_kalman.m");
 % Set workspace parameters
 

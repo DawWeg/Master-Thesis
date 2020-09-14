@@ -5,6 +5,7 @@ output_directory =  ["00_data/output_samples/" name "/"];
 
 f_noisy     = [ output_directory 'audio/NOISY_' name ext];
 f_clear     = [ output_directory 'audio/CLEAR_' name ext];
+f_arsin     = [ output_directory 'audio/ARSIN_' name ext];
 f_scl_f     = [ output_directory 'audio/SCL_F_' name ext];
 f_scl_b     = [ output_directory 'audio/SCL_B_' name ext];
 f_scl_fb    = [ output_directory 'audio/SCL_FB_' name ext];
@@ -18,6 +19,7 @@ f_var_fbf   = [ output_directory 'audio/VAR_FBF_' name ext];
 
 odg.clear    = PQevalAudio (f_clear, f_clear);
 odg.noisy    = PQevalAudio (f_clear, f_noisy);
+odg.arsin    = PQevalAudio (f_clear, f_arsin);
 
 odg.scl_f    = PQevalAudio (f_clear, f_scl_f);
 odg.scl_b    = PQevalAudio (f_clear, f_scl_b);
