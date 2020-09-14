@@ -50,8 +50,10 @@ function [clear_signal_fb, clear_signal_f, clear_signal_b, clear_signal_fbf, cle
   
   %%% Merging alarms
   detection_signal_fb = zeros(size(detection_signal_f));  
-  detection_signal_fb(:,1) = merge_alarms_2(detection_signal_f(:,1), detection_signal_b(:,1));
-  detection_signal_fb(:,2) = merge_alarms_2(detection_signal_f(:,2), detection_signal_b(:,2));
+  %detection_signal_fb(:,1) = merge_alarms_2(detection_signal_f(:,1), detection_signal_b(:,1));
+  %detection_signal_fb(:,2) = merge_alarms_2(detection_signal_f(:,2), detection_signal_b(:,2));
+  detection_signal_fb(:,1) = merge_alarms_testx(detection_signal_f(:,1), detection_signal_b(:,1));
+  detection_signal_fb(:,2) = merge_alarms_testx(detection_signal_f(:,2), detection_signal_b(:,2));  
   
   clear detection_signal_f detection_signal_b;
   
