@@ -43,7 +43,7 @@ function [detection_signal_fb] = merge_alarms_2(detection_signal_f, detection_si
     if((detection_signal_f(t) == 1 && detection_signal_f(t-1) == 0) || (detection_signal_b(t) == 1 && detection_signal_b(t-1) == 0))
       block_start = t - model_rank;
       
-      for i = 1:2*max_corrupted_block_length      %%% jak to ma byc odkomentowane to musi byc tez ten elseif na dole
+      for i = 1:max_corrupted_block_length      %%% jak to ma byc odkomentowane to musi byc tez ten elseif na dole
       %for i = 1:N-max_corrupted_block_length-t   %%% jak to ma byc odkomentowane to tamto nie musi byc
         if(!any(detection_signal_f(t+i:t+i+model_rank-1)) && !any(detection_signal_b(t+i:t+i+model_rank-1)))
           block_end = t+i+model_rank-1;

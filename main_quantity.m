@@ -34,6 +34,6 @@ save_audio("NOISY", noisy_signal, 0);
 save_audio("CLEAR", input_signal, 0);
 save("-binary", get_data_save_filename("INPUT"), "input_signal", "noisy_signal");
 
-VAR_BIDI_ImpulseNoiseReduction(noisy_signal);
+%VAR_BIDI_ImpulseNoiseReduction(noisy_signal);
 SCL_BIDI_ImpulseNoiseReduction(noisy_signal);
 ARSIN_ImpulseNoiseReduction(noisy_signal);
