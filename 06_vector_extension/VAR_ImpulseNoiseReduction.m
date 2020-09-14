@@ -43,6 +43,9 @@ function [ clear_signal,...
   
   t = model_rank+1;
   max_alarm_length = max_corrupted_block_length;
+  if use_external_detection
+    max_alarm_length = max_alarm_length*3;
+  endif
   skip_detection = 0;
   unstable_model = 0;
   do_init_regression = 1;
@@ -129,7 +132,7 @@ while(t <= N);
     % -> Number of correct samples in a row is equal to model rank
     % -> Maximum alarm length is reached
     % -> End of signal is rached
-    while (correct_samples < model_rank) && (use_external_detection || (alarm_length < max_alarm_length)) && (tk+1 <= N)
+    while (correct_samples < model_rank) && ((alarm_length < max_alarm_length)) && (tk+1 <= N)
       tk = tk+1;
      
      % Perform calculations for one step of kalman algorithm
