@@ -1,32 +1,94 @@
+<<<<<<< Updated upstream
 # Created by Octave 4.4.1, Mon Sep 14 11:53:36 2020 GMT <unknown@DESKTOP-MFGM71T>
+=======
+# Created by Octave 5.1.0, Mon Sep 14 01:46:30 2020 GMT <unknown@LAPTOP-59FRPE8E>
+>>>>>>> Stashed changes
 # name: odg
 # type: scalar struct
 # ndims: 2
  1 1
+<<<<<<< Updated upstream
 # length: 5
 # name: scl_f
 # type: scalar
 -0.26460447146540389
+=======
+# length: 12
+# name: clear
+# type: scalar
+0.212641676150501
+
+
+# name: noisy
+# type: scalar
+-3.9131695952982253
+
+
+# name: scl_f
+# type: scalar
+-0.3038816610096422
+>>>>>>> Stashed changes
 
 
 # name: scl_b
 # type: scalar
+<<<<<<< Updated upstream
 -0.28724445314315128
+=======
+-0.31281155849750064
+>>>>>>> Stashed changes
 
 
 # name: scl_fb
 # type: scalar
+<<<<<<< Updated upstream
 -0.15085941076460463
+=======
+-0.51538343474746462
+>>>>>>> Stashed changes
 
 
 # name: scl_fbb
 # type: scalar
+<<<<<<< Updated upstream
 -0.15659022954945545
+=======
+-0.58332347621417391
+>>>>>>> Stashed changes
 
 
 # name: scl_fbf
 # type: scalar
+<<<<<<< Updated upstream
 -0.026408336024889678
+=======
+-0.4901742613806146
+
+
+# name: var_f
+# type: scalar
+-0.35808964239322671
+
+
+# name: var_b
+# type: scalar
+-0.34252110350060105
+
+
+# name: var_fb
+# type: scalar
+-0.17201306606824573
+
+
+# name: var_fbb
+# type: scalar
+-0.17842173004241779
+
+
+# name: var_fbf
+# type: scalar
+-0.18790822491692927
+>>>>>>> Stashed changes
 
 
 
