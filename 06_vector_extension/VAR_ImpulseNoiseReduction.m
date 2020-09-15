@@ -4,6 +4,7 @@ function [ clear_signal,...
            variance ] = VAR_ImpulseNoiseReduction(input_signal, input_detection)
   
   global model_rank ewls_lambda mu max_corrupted_block_length;
+  check_stability = 0; # put 1 if check for stability should run
   use_external_detection = 0;
   if (nargin > 1)
     use_external_detection = 1;
@@ -31,6 +32,7 @@ function [ clear_signal,...
   
   ewls_error_current = zeros(2,1);
   ewls_error_previous = zeros(2,1);
+  ewls_error_trajectory = zeros(size(input_signal));
   
   ewls_noise_variance_current = zeros(2,2);
   ewls_noise_variance_previous = zeros(2,2);
@@ -74,7 +76,7 @@ while(t <= N);
           ewls_covariance_matrix_previous, ...
           ewls_theta_previous, ...
           ewls_noise_variance_previous);
-  
+  ewls_error_trajectory(:,t) = ewls_error_current;
   % If model is in steady state (whole window is populated)
   % And number of samples marked by closed loop detection as cleared is zeros
   % Perform EWLS based detection
@@ -103,26 +105,39 @@ while(t <= N);
     
     % Check model stability and in case it is unstable reestimate coefficients
     % using WWR algorithm
-    if(check_stability_var (ewls_theta_previous) == 0)
+    
+    if(check_stability && (check_stability_var (ewls_theta_previous) == 0))
       printf("Model ustable on: %d.\n", t0);
-      ewls_theta_previous = wwr_estimation3(...
+
+      [cl_theta_l, cl_theta_r, qqx] = wwr_estimation3(...
           min([ewls_equivalent_window_length, t0]),...
           clear_signal(:,t0-(min([ewls_equivalent_window_length, t0-1])):t0));
-      unstable_model++;
+      %noise_variance_kalman = mround(noise_variance_kalman);
+      %save('-binary','wwr3data.dat', ...
+      %  'theta_kalman', 'ewls_equivalent_window_length', 't0', 'clear_signal',...
+      %  'ewls_theta_previous', 'ewls_error_trajectory');
       
+      unstable_model++;
+      cl_theta = mround([cl_theta_l, cl_theta_r]);
+      %cl_noise_variance = mround(qqx./ewls_equivalent_window_length);
+      cl_noise_variance = mround(ewls_noise_variance_previous);
       %ewls_theta_previous = ...
       %    wwr_estimation2(min([ewls_equivalent_window_length, t0]), ...
       %    clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...
       %    ewls_noise_variance_previous );
+      
+    else
+      
+      cl_theta_l = mround(ewls_theta_previous(1:2*model_rank));
+      cl_theta_r = mround(ewls_theta_previous(2*model_rank+1:end));
+      cl_theta = mround([cl_theta_l, cl_theta_r]);
+      cl_noise_variance = mround(ewls_noise_variance_previous);
     endif 
 
     % Set up initial conditions for Kalman closed loop detection
     cl_covariance_matrix = zeros(2*model_rank, 2*model_rank);
-    cl_theta_l = mround(ewls_theta_previous(1:2*model_rank));
-    cl_theta_r = mround(ewls_theta_previous(2*model_rank+1:end));
-    cl_theta = mround([cl_theta_l, cl_theta_r]);
     cl_state_vector = init_regression_vector(clear_signal, model_rank, t0+1);
-    cl_noise_variance = mround(ewls_noise_variance_previous);
+    
     cl_threshold = zeros(2,1);
     tk = t0;
     correct_samples = 0;

@@ -1,4 +1,4 @@
-function [theta] = wwr_estimation3(N, input_signal)
+function [theta_l, theta_r, QQx] = wwr_estimation3(N, input_signal)
 
   %%% Preparing variables
   global model_rank;
@@ -84,5 +84,7 @@ function [theta] = wwr_estimation3(N, input_signal)
   %theta_l = [alfa_11', alfa_12', alfa_13', alfa_14']';
   %theta_r = [alfa_21', alfa_22', alfa_23', alfa_24']';
   %theta = [theta_l; theta_r];
-  theta = [teta1x; teta2x];
+  QQx = QQ(:,:,r);
+  theta_l = teta1x;
+  theta_r = teta2x;
 end
