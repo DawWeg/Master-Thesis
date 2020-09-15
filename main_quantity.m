@@ -13,7 +13,11 @@ filenames = [ ...
                       "classical_1.wav";
                     ]; 
 % Prepare testing signal
+<<<<<<< HEAD
 input_filename = filenames(1,:); seconds_start = 0; seconds_end = 15;
+=======
+input_filename = filenames(1,:); seconds_start = 0; seconds_end = 10;
+>>>>>>> e59c16b93e2b37925cf7ec1db41c34abe84fe14f
 [input_signal, frequency] = load_audio(input_filename, seconds_start, seconds_end);
     
 noise_start = 1000;
@@ -39,3 +43,4 @@ save("-binary", get_data_save_filename("INPUT"), "input_signal", "noisy_signal")
 
 VAR_BIDI_ImpulseNoiseReduction(noisy_signal);
 SCL_BIDI_ImpulseNoiseReduction(noisy_signal);
+ARSIN_ImpulseNoiseReduction(noisy_signal);
