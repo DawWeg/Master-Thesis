@@ -9,7 +9,7 @@ filenames = [ ...
                       "jazz_2.wav";
                     ]; 
 % Prepare testing signal
-input_filename = filenames(3 ,:); seconds_start = 0; seconds_end = 5;
+input_filename = filenames(3 ,:); seconds_start = 0; seconds_end = 3;
 [input_signal, frequency] = load_audio(input_filename, seconds_start, seconds_end);
     
 noise_start = 1000;
