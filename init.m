@@ -35,13 +35,13 @@ max_recursion_depth(10);
 global model_rank = 10;
 
 %%% EWLS
-global ewls_lambda = 0.999;
+global ewls_lambda = 0.998;
 global ewls_lambda_0 = 0.998;
 global ewls_noise_variance_coupled = 0; % 1=coupled | other=decoupled
 global ewls_initial_cov_matrix = 100;
 
 %%% Detection
-global mu = 4.5;
+global mu = 5.5;
 global detection_delay = 10*model_rank;
 
 %%% Bidirectional

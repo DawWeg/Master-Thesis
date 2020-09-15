@@ -5,19 +5,11 @@ global frequency;
 input_directory = "00_data/input_samples/clear/";
 filenames = [ ...
                       "Chopin_Gavrilov_1_Bflat_clear_48.wav";...
-                      "Chopin_Gavrilov_1_Bflat_clear.wav";...
-                      "Chopin_Gavrilov_2_Dflat_clear.wav";...
-                      "Chopin_Gavrilov_4_Fsharp_clear.wav";...
-                      "electro_1.wav";... 
-                      "jazz_2.wav";...
-                      "classical_1.wav";
+                      "rec_ORG_3.wav"; ...
+                      "jazz_2.wav";
                     ]; 
 % Prepare testing signal
-<<<<<<< HEAD
-input_filename = filenames(1,:); seconds_start = 0; seconds_end = 15;
-=======
-input_filename = filenames(1,:); seconds_start = 0; seconds_end = 10;
->>>>>>> e59c16b93e2b37925cf7ec1db41c34abe84fe14f
+input_filename = filenames(3 ,:); seconds_start = 0; seconds_end = 5;
 [input_signal, frequency] = load_audio(input_filename, seconds_start, seconds_end);
     
 noise_start = 1000;
@@ -41,6 +33,7 @@ save_audio("NOISY", noisy_signal, 0);
 save_audio("CLEAR", input_signal, 0);
 save("-binary", get_data_save_filename("INPUT"), "input_signal", "noisy_signal");
 
+%ARSIN_ImpulseNoiseReduction(noisy_signal);
+dbstop("VAR_BIDI_ImpulseNoiseReduction");
 VAR_BIDI_ImpulseNoiseReduction(noisy_signal);
 SCL_BIDI_ImpulseNoiseReduction(noisy_signal);
-ARSIN_ImpulseNoiseReduction(noisy_signal);

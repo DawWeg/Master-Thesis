@@ -1,6 +1,7 @@
 function [coefficients_estimate] = levinson_durbin_estimation (N, input_signal)
   global model_rank;
   input_signal = [zeros(model_rank,1); input_signal; zeros(model_rank,1)];
+  N = N + 2*model_rank;
   coefficients_estimate = zeros(model_rank, 1);
 
   p = zeros(1, model_rank+1);

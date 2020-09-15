@@ -1,6 +1,6 @@
 run("init.m");
 
-N = 1000;
+N = 5000;
 noise_l = randn(N,1);
 noise_r = randn(N,1); 
 y_l = zeros(N,1);
@@ -10,12 +10,12 @@ model_output = [y_l, y_r]';
 noise_v = [noise_l, noise_r]';
 
 model_rank = 4;
-alfa_11 = [1.23, 0.0]'; 
+alfa_11 = [0.91, 0.1]'; 
 alfa_12 = [-0.3, 0.4]';
 alfa_13 = [0.1, -0.2]';
 alfa_14 = [-0.3, 0.4]';
 
-alfa_21 = [0.0, 1.15]'; 
+alfa_21 = [0.3, 0.9]'; 
 alfa_22 = [0.3, -0.3]';
 alfa_23 = [-0.3, 0.1]';
 alfa_24 = [0.1, -0.2]';
@@ -50,6 +50,7 @@ gain_trajectory_recu = zeros(2*model_rank,N);
 error_trajectory_recu = zeros(size(model_output));
 noise_variance_trajectory_recu = zeros(2,2,N);
 
+
 for t=2:N
   print_progress("EWLS Comparison", t, N, N/100);
   regression(:,t) = [model_output(:,t-1); regression(1:end-2, t-1)];
@@ -64,15 +65,17 @@ for t=2:N
   error_trajectory_recu(:,t) = error;
   noise_variance_trajectory_recu(:,:,t) = noise_variance;
   
-  if(!check_stability_var(theta_trajectory_recu(:,t)) && t > 50) 
+  if(!check_stability_var(theta_trajectory_recu(:,t-1)) && t > 100) 
     printf("Model ustable on: %d.\n", t);
     printf("EWLS model coefficients:\n");
-    disp(theta_trajectory_recu(:,t));
-    [theta_trajectory_recu(:,t)] = ...
-        wwr_estimation3(min([ewls_equivalent_window_length, t]), ...
-        model_output(:,t-(min([ewls_equivalent_window_length, t]))+1:t));    
+    disp(theta_trajectory_recu(:,t-1));
+    %disp(abs(eig(vector_generate_aq_cq(theta_trajectory_recu(:,t-1), model_rank, model_rank))));
+    [theta_trajectory_recu(:,t-1)] = ...
+        wwr_estimation3(min([ewls_equivalent_window_length, t-1]), ...
+        model_output(:,t-(min([ewls_equivalent_window_length, t-1])):t-1));    
     printf("Reestimated coefficients:\n");
-    disp(theta_trajectory_recu(:,t));
+    disp(theta_trajectory_recu(:,t-1));
+    %disp(abs(eig(vector_generate_aq_cq(theta_trajectory_recu(:,t-1), model_rank, model_rank))));
   endif
   
   phi = [regression(:,t), zeros(2*model_rank, 1); zeros(2*model_rank, 1), regression(:,t)];

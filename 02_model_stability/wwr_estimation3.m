@@ -17,7 +17,8 @@ function [theta] = wwr_estimation3(N, input_signal)
   KK2 = zeros(2,2,r);
 
   %%% Calculating autocovariance coefficients  
-  input_signal = [zeros(2,model_rank), input_signal, zeros(2,model_rank)];  
+  %input_signal = [zeros(2,model_rank), input_signal, zeros(2,model_rank)];
+  %N = N+2*model_rank;  
   R = zeros(2, 2, model_rank+1);
   for k = 1:model_rank+1
     for i = 1:N-k
@@ -79,5 +80,9 @@ function [theta] = wwr_estimation3(N, input_signal)
     teta2x(from:to,1) = -TT(2,:);
   endfor   
     
+    
+  %theta_l = [alfa_11', alfa_12', alfa_13', alfa_14']';
+  %theta_r = [alfa_21', alfa_22', alfa_23', alfa_24']';
+  %theta = [theta_l; theta_r];
   theta = [teta1x; teta2x];
 end

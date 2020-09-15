@@ -61,12 +61,15 @@ while(t <= N);
   if(!check_stability(ewls_coefficients_estimate(:,t), process_rank) && t > process_rank*10) 
     printf("Model ustable on: %d.\n", t);
     printf("EWLS model coefficients:\n%f, %f, %f, %f, %f, %f\n", ewls_coefficients_estimate(1,t), ewls_coefficients_estimate(2,t), ewls_coefficients_estimate(3,t), ewls_coefficients_estimate(4,t), ewls_coefficients_estimate(5,t), ewls_coefficients_estimate(6,t));
+    disp(abs(roots([1; -ewls_coefficients_estimate(:,t)])));
     [ewls_coefficients_estimate(:,t)] = ...
         levinson_durbin_estimation(min([ewls_equivalent_window_length, t]), ...
         process_output(t-(min([ewls_equivalent_window_length, t]))+1:t));    
     test_coeffs(:,test_count) = ewls_coefficients_estimate(:,t);
     reference_acf(:,test_count) = acovf(flip(process_output(t-(min([ewls_equivalent_window_length, t]))+1:t))', process_rank);
     [reference_coeffs(:,test_count)] = levinson(reference_acf(:,test_count), process_rank);
+    disp("dupa");
+    disp(abs(roots([1; -ewls_coefficients_estimate(:,t)])));
     printf("Autocorrelation function estimated using self implemented method:\n%f, %f, %f, %f, %f, %f, %f\n", test_acf(1,test_count), test_acf(2,test_count), test_acf(3,test_count), test_acf(4,test_count), test_acf(5,test_count), test_acf(6,test_count), test_acf(7,test_count));
     printf("Autocorrelation function estimated using environment functions:\n%f, %f, %f, %f, %f, %f, %f\n", reference_acf(1,test_count), reference_acf(2,test_count), reference_acf(3,test_count), reference_acf(4,test_count), reference_acf(5,test_count), reference_acf(6,test_count), reference_acf(7,test_count));
     printf("Coefficients estimated using self implemented method:\n%f, %f, %f, %f, %f, %f\n", test_coeffs(1,test_count), test_coeffs(2,test_count), test_coeffs(3,test_count), test_coeffs(4,test_count), test_coeffs(5,test_count), test_coeffs(6,test_count));
