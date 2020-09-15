@@ -30,7 +30,7 @@ function [input_signal, ...
   endif
 
   t = model_rank+1;
-  while(t <= N-max_corrupted_block_length);
+  while(t <= N-max_corrupted_block_length-model_rank);
     print_progress("SCL Impulse Noise Reduction", t, N, N/100);
     %%% Estimation 
     ewls_regression_vector = input_signal(t-1:-1:t-model_rank);

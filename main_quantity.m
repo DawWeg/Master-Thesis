@@ -8,9 +8,12 @@ filenames = [ ...
                       "Chopin_Gavrilov_1_Bflat_clear.wav";...
                       "Chopin_Gavrilov_2_Dflat_clear.wav";...
                       "Chopin_Gavrilov_4_Fsharp_clear.wav";...
+                      "electro_1.wav";... 
+                      "jazz_2.wav";...
+                      "classical_1.wav";
                     ]; 
 % Prepare testing signal
-input_filename = filenames(1,:); seconds_start = 0; seconds_end = 5;
+input_filename = filenames(1,:); seconds_start = 0; seconds_end = 15;
 [input_signal, frequency] = load_audio(input_filename, seconds_start, seconds_end);
     
 noise_start = 1000;
@@ -34,5 +37,5 @@ save_audio("NOISY", noisy_signal, 0);
 save_audio("CLEAR", input_signal, 0);
 save("-binary", get_data_save_filename("INPUT"), "input_signal", "noisy_signal");
 
-%VAR_BIDI_ImpulseNoiseReduction(noisy_signal);
+VAR_BIDI_ImpulseNoiseReduction(noisy_signal);
 SCL_BIDI_ImpulseNoiseReduction(noisy_signal);
