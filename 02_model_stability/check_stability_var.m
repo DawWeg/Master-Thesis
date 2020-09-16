@@ -3,7 +3,7 @@ function isStable = check_stability_var (model_coefficients)
 isStable = 1;
 model_rank = length(model_coefficients)/4;
 A = vector_generate_aq_cq(model_coefficients, model_rank, model_rank);
-if(max(abs(eig(A))) > 1)
+if(max(abs(eig(A))) > 1.1)
   printf("Max eig: %f\n)",max(abs(eig(A))));
   isStable = 0;
 endif
