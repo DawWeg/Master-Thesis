@@ -22,16 +22,17 @@ f_arsin     = [ output_directory 'audio/ARSIN_' name ext];
 
 %odg.scl_f    = PQevalAudio (f_clear, f_scl_f);
 %odg.scl_b    = PQevalAudio (f_clear, f_scl_b);
-%odg.scl_fb   = PQevalAudio (f_clear, f_scl_fb);
-%odg.scl_fbb  = PQevalAudio (f_clear, f_scl_fbb);
-%odg.scl_fbf  = PQevalAudio (f_clear, f_scl_fbf);
+odg.scl_fb   = PQevalAudio (f_clear, f_scl_fb);
+odg.scl_fbb  = PQevalAudio (f_clear, f_scl_fbb);
+odg.scl_fbf  = PQevalAudio (f_clear, f_scl_fbf);
 
-%odg.var_f    = PQevalAudio (f_clear, f_var_f);
-%odg.var_b    = PQevalAudio (f_clear, f_var_b);
-%odg.var_fb   = PQevalAudio (f_clear, f_var_fb);
-%odg.var_fbb  = PQevalAudio (f_clear, f_var_fbb);
-%odg.var_fbf  = PQevalAudio (f_clear, f_var_fbf);
+odg.var_f    = PQevalAudio (f_clear, f_var_f);
+odg.var_b    = PQevalAudio (f_clear, f_var_b);
+odg.var_fb   = PQevalAudio (f_clear, f_var_fb);
+odg.var_fbb  = PQevalAudio (f_clear, f_var_fbb);
+odg.var_fbf  = PQevalAudio (f_clear, f_var_fbf);
 
 odg.arsin = PQevalAudio (f_clear, f_arsin);
-%save("-text", [output_directory, "PEAQ_Report.txt"], "odg");
+
+save("-text", [output_directory, "PEAQ_Report.txt"], "odg");
 disp(odg);
