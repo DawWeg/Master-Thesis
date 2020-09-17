@@ -7,3 +7,4 @@ electro_1.wav - https://www.looperman.com/loops/detail/197777/nh-the-pilot-drop-
 piano_1.wav - https://www.looperman.com/loops/detail/228376/0031-trap-piano-alternative-140bpm-hip-hop-piano-loop
 guitar_1.wav - https://www.looperman.com/loops/detail/228427/lenoxbeatmaker-to-the-top-160bpm-trap-electric-guitar-loop
 guitar_2.wav - https://www.looperman.com/loops/detail/228242/lenoxbeatmaker-for-mum-120bpm-trap-electric-guitar-loop
+piano_w.wav - https://www.looperman.com/loops/detail/228429/0033-trap-piano-120bpm-hip-hop-piano-loop

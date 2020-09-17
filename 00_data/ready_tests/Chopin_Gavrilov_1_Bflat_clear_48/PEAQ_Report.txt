@@ -1,0 +1,73 @@
+# Created by Octave 4.4.1, Wed Sep 16 18:08:20 2020 GMT <unknown@DESKTOP-MFGM71T>
+# name: odg
+# type: scalar struct
+# ndims: 2
+ 1 1
+# length: 13
+# name: clear
+# type: scalar
+0.21173065815113246
+
+
+# name: noisy
+# type: scalar
+-3.913169461933971
+
+
+# name: scl_f
+# type: scalar
+-0.238632418563403
+
+
+# name: scl_b
+# type: scalar
+-0.28235245688814326
+
+
+# name: scl_fb
+# type: scalar
+-0.12848925471671135
+
+
+# name: scl_fbb
+# type: scalar
+-0.11499953878308222
+
+
+# name: scl_fbf
+# type: scalar
+-0.13262800499340477
+
+
+# name: var_f
+# type: scalar
+-0.25343491413738706
+
+
+# name: var_b
+# type: scalar
+-0.18522609690103353
+
+
+# name: var_fb
+# type: scalar
+-0.046990781206220245
+
+
+# name: var_fbb
+# type: scalar
+-0.068723857548152356
+
+
+# name: var_fbf
+# type: scalar
+-0.086654437240472504
+
+
+# name: arsin
+# type: scalar
+-0.62027363302732796
+
+
+
+
