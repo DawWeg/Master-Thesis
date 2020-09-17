@@ -37,6 +37,7 @@ global model_rank = 10;
 %%% EWLS
 global ewls_lambda = 0.995;
 global ewls_lambda_0 = 0.993;
+
 global ewls_noise_variance_coupled = 0; % 1=coupled | other=decoupled
 global ewls_initial_cov_matrix = 100;
 
