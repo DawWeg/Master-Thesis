@@ -17,11 +17,11 @@ f_var_fbb   = [ output_directory 'audio/VAR_FBB_' name ext];
 f_var_fbf   = [ output_directory 'audio/VAR_FBF_' name ext];
 f_arsin     = [ output_directory 'audio/ARSIN_' name ext];
 
-%odg.clear    = PQevalAudio (f_clear, f_clear);
-%odg.noisy    = PQevalAudio (f_clear, f_noisy);
+odg.clear    = PQevalAudio (f_clear, f_clear);
+odg.noisy    = PQevalAudio (f_clear, f_noisy);
 
-%odg.scl_f    = PQevalAudio (f_clear, f_scl_f);
-%odg.scl_b    = PQevalAudio (f_clear, f_scl_b);
+odg.scl_f    = PQevalAudio (f_clear, f_scl_f);
+odg.scl_b    = PQevalAudio (f_clear, f_scl_b);
 odg.scl_fb   = PQevalAudio (f_clear, f_scl_fb);
 odg.scl_fbb  = PQevalAudio (f_clear, f_scl_fbb);
 odg.scl_fbf  = PQevalAudio (f_clear, f_scl_fbf);

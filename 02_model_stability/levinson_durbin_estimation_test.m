@@ -64,7 +64,7 @@ while(t <= N);
     disp(abs(roots([1; -ewls_coefficients_estimate(:,t)])));
     [ewls_coefficients_estimate(:,t)] = ...
         levinson_durbin_estimation(min([ewls_equivalent_window_length, t]), ...
-        process_output(t-(min([ewls_equivalent_window_length, t]))+1:t));    
+        process_output(t-(min([ewls_equivalent_window_length, t-1])):t));    
     test_coeffs(:,test_count) = ewls_coefficients_estimate(:,t);
     reference_acf(:,test_count) = acovf(flip(process_output(t-(min([ewls_equivalent_window_length, t]))+1:t))', process_rank);
     [reference_coeffs(:,test_count)] = levinson(reference_acf(:,test_count), process_rank);

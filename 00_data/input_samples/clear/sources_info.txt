@@ -5,3 +5,5 @@ classical_1.wav - https://www.looperman.com/loops/detail/223096/cinematic-real-s
 blues_1.wav - https://www.looperman.com/loops/detail/161132/dirty-rotten-onions-blues-guitar-62am-62bpm-blues-electric-guitar-loop
 electro_1.wav - https://www.looperman.com/loops/detail/197777/nh-the-pilot-drop-1-sequence-110bpm-electro-bass-synth-loop
 piano_1.wav - https://www.looperman.com/loops/detail/228376/0031-trap-piano-alternative-140bpm-hip-hop-piano-loop
+guitar_1.wav - https://www.looperman.com/loops/detail/228427/lenoxbeatmaker-to-the-top-160bpm-trap-electric-guitar-loop
+guitar_2.wav - https://www.looperman.com/loops/detail/228242/lenoxbeatmaker-for-mum-120bpm-trap-electric-guitar-loop
