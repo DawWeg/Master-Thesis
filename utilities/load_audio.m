@@ -2,7 +2,7 @@ function [samples, frequency] = load_audio(filename, start_seconds, end_seconds)
   global input_directory;
   [samples, frequency] = audioread(strcat([input_directory, filename]));
   sample_time = 1/frequency;
-  start_sample = ceil(start_seconds/sample_time) + 1;
+  start_sample = floor(start_seconds/sample_time) + 1;
   
   if end_seconds==-1
    end_sample = length(samples(:,1));

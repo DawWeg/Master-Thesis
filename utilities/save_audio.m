@@ -2,6 +2,7 @@ function save_audio(method_name, samples, save_with_id, full_file)
   global output_directory input_filename frequency ewls_lambda;
   datetime = int32(clock());
   model_delay = round((1+ewls_lambda)/(1-ewls_lambda));
+  id = "";
   if nargin < 3
     save_with_id = 0;
   endif 
