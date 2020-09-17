@@ -25,7 +25,7 @@ if do_peaq
             if(isempty(name) || (name == '.') || (ext == '.txt'))
                 continue;
             endif
-            output_directory =  ["00_data/output_samples/" name "/"];
+            output_directory =  ["00_data/output_samples/server/" name "/"];
             input_filename = input_filename_with_extension;
             
             % Generate noisy signals if specified
@@ -53,7 +53,7 @@ if do_peaq
               
             if do_peaq_analysis
                 [dir, name, ext] = fileparts(input_filename);
-                output_directory =  ["00_data/output_samples/" name "/"];
+                output_directory =  ["00_data/output_samples/server/" name "/"];
 
                 f_noisy     = [ output_directory 'audio/NOISY_' name ext];
                 f_clear     = [ output_directory 'audio/CLEAR_' name ext];
