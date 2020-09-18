@@ -6,7 +6,7 @@ org_input_directory = input_directory;
 
 do_peaq = 1;
 do_peaq_process = 1;
-do_peaq_analysis = 0;
+do_peaq_analysis = 1;
 
 do_normal = 0;
 do_normal_process = 1;
@@ -27,18 +27,18 @@ if do_peaq
             input_filename = input_filename_with_extension;
               
             % Prepare testing signal
-            seconds_start = 0; seconds_end = -1;
+            seconds_start = 0; seconds_end = 10;
             [input_signal, frequency] = load_audio(input_filename, seconds_start, seconds_end);
             [noisy_signal, frequency] = load_audio(['../noise/' input_filename], seconds_start, seconds_end);
             % Save input data for reporting and PEAQ (file is shortened from both sides - workaround for PEAQ error)
-            %save_audio("NOISY", noisy_signal, 0);
-            %save_audio("CLEAR", input_signal, 0);
-            %save("-binary", get_data_save_filename("INPUT"), "input_signal", "noisy_signal");
+            save_audio("NOISY", noisy_signal, 0);
+            save_audio("CLEAR", input_signal, 0);
+            save("-binary", get_data_save_filename("INPUT"), "input_signal", "noisy_signal");
               
             if do_peaq_process
-                %ARSIN_ImpulseNoiseReduction(noisy_signal);
+                ARSIN_ImpulseNoiseReduction(noisy_signal);
                 VAR_BIDI_ImpulseNoiseReduction(noisy_signal);
-                %SCL_BIDI_ImpulseNoiseReduction(noisy_signal);
+                SCL_BIDI_ImpulseNoiseReduction(noisy_signal);
             endif
               
             if do_peaq_analysis

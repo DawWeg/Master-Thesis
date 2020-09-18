@@ -10,5 +10,9 @@ function [samples, frequency] = load_audio(filename, start_seconds, end_seconds)
    end_sample = end_seconds/sample_time;
   endif
   
+  if end_sample > length(samples(:,1))
+    end_sample = length(samples(:,1));
+  endif
+  
   samples = samples((start_sample:end_sample),:);
 endfunction
