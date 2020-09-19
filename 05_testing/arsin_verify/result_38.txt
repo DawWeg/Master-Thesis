@@ -2,5 +2,3 @@
 # name: odg
 # type: scalar
 -1.3211789521556354
-
-
