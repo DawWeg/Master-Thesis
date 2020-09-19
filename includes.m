@@ -1,5 +1,4 @@
 addpath("utilities");
-addpath("methods");
 addpath("00_data");
 addpath("01_identification");
 addpath("02_model_stability");
@@ -13,4 +12,10 @@ addpath("07_scalar");
 addpath("08_scalar_bidirectional");
 addpath("09_vector_bidirectional");
 addpath("10_bidirectional");
-addpath("audio_resto/octave_clicks");
+addpath("11_ARSIN_Method");
+addpath("11_ARSIN_Method/octave_clicks");
+addpath("12_PEAQ");
+addpath("12_PEAQ/CB");
+addpath("12_PEAQ/MOV");
+addpath("12_PEAQ/Misc"); 
+addpath("12_PEAQ/Patt");
