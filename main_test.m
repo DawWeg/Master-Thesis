@@ -1,75 +1,59 @@
 %%% Preparing workspace
-clear all;
-close all;
-clc;
-output_precision(12);
-max_recursion_depth(10);
-addpath("utilities");
-addpath("methods");
+run("init_server.m");
+global input_filename;
+global frequency;
+org_input_directory = input_directory;
 
-%%% Script parameters
-% Common parameters
-should_plot = 1;
-should_save_audio = 1;
-load_audio_start_second = 0;
-load_audio_end_second = 3; %-1 for whole file
-global output_directory="output_samples/";
-global ewls_lambda = 0.999;
-global ewls_lambda_0 = 0.998;
-global ewls_noise_variance_coupled = 1; % 1=coupled | other=decoupled
-global ewls_initial_cov_matrix = 100;
-global model_rank = 10;
-global mu = 4;
+do_peaq = 1;
+do_peaq_generate_new_noisy_samples = 1;
+do_peaq_process = 0;
+do_peaq_analysis = 0;
 
-% Prediction methods exclusive parameters
-global max_corrupted_block_length = 50;
-global detection_delay = 10*model_rank;
-global decimal_accuracy = 12;
+do_normal = 0;
+do_normal_process = 1;
+execution_error_log = [];
 
-%%% Reading input samples
-filenames = [ ...
-              "Chopin_Etiuda_Op_25_nr_8.WAV";...
-              "Chopin_Etiuda_Op_25_nr_9.WAV";...
-              "Chopin_Etiuda_Op_25_nr_10.WAV";...
-              "12.wav" ...
-            ]; 
-current_file = filenames(1,:);
+if do_peaq
+    input_directory = org_input_directory;
+    input_directory = [input_directory, 'clear/' ];
+     
+            input_filename_with_extension = [ 'piano_2.wav' ]; 
+            [dir, name, ext] = fileparts(input_filename_with_extension);
+            if(isempty(name) || (name == '.') || (ext == '.txt'))
+                continue;
+            endif
+            output_directory =  ["00_data/output_samples/server/" name "/"];
+            input_filename = input_filename_with_extension;
+            
+            % Generate noisy signals if specified
+            if do_peaq_generate_new_noisy_samples
+                seconds_start = 0; seconds_end = -1;
+                [input_signal, frequency] = load_audio(input_filename, seconds_start, seconds_end);
+                generate_noisy_file(input_signal);
+            endif
+              
+              
+            % Prepare testing signal
+            seconds_start = 0; seconds_end = -1;
+            [input_signal, frequency] = load_audio(input_filename, seconds_start, seconds_end);
+            [noisy_signal, frequency] = load_audio(['../noise/' input_filename], seconds_start, seconds_end);
+            % Save input data for reporting and PEAQ (file is shortened from both sides - workaround for PEAQ error)
+            save_audio("NOISY", noisy_signal, 0);
+            save_audio("CLEAR", input_signal, 0);
+            save("-binary", get_data_save_filename("INPUT"), "input_signal", "noisy_signal");
+             
+              
+            if do_peaq_analysis
+                [dir, name, ext] = fileparts(input_filename);
+                output_directory =  ["00_data/output_samples/server/" name "/"];
 
-[input_signal, frequency] = load_audio(current_file, load_audio_start_second, load_audio_end_second);
-input_signal = input_signal';
+                f_noisy     = [ output_directory 'audio/NOISY_' name ext];
+                f_clear     = [ output_directory 'audio/CLEAR_' name ext];
+                odg.noisy    = PQevalAudio (f_clear, f_noisy)
+            endif
 
-dbstop("P_U_V_C_VK");
-[detection_signal, coefficients_trajectory, error_trajectory, error_threshold_trajectory, noise_variance_trajectory, model_output] = ...
-          P_U_V_C_VK(input_signal); 
+    
+endif
 
-figure(1);
-subplot(4,2,1);
-plot(input_signal(1,:));
-subplot(4,2,2);
-plot(input_signal(2,:));
-subplot(4,2,3);
-plot(abs(error_trajectory(1,:)));
-hold on;
-plot(error_threshold_trajectory(1,:), 'r');
-hold off;
-subplot(4,2,4);
-plot(abs(error_trajectory(2,:)));
-hold on;
-plot(error_threshold_trajectory(2,:), 'r');
-hold off;
-subplot(4,2,5);
-plot(detection_signal(1,:));
-subplot(4,2,6);
-plot(detection_signal(2,:));
-subplot(4,2,7);
-plot(model_output(1,:));
-subplot(4,2,8);
-plot(model_output(2,:));
 
-figure(2);
-subplot(2,1,1);
-plot(noise_variance_trajectory(1,:));
-subplot(2,1,2);
-plot(noise_variance_trajectory(2,:));
-
-%save_audio(current_file, "modeling", model_output', frequency, 1);
+save("-binary", [deblank(strtrim(output_directory)), "execution_error_log.txt"], "execution_error_log");
