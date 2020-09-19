@@ -1,6 +1,0 @@
-# Created by Octave 5.1.0, Fri Sep 18 20:13:26 2020 GMT <unknown@LAPTOP-59FRPE8E>
-# name: odg
-# type: scalar
--0.69376359911486807
-
-
