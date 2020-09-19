@@ -55,6 +55,10 @@ function [ clear_signal,...
 while(t <= N);
   print_progress("VAR Impulse noise reduction", t, N, N/100);
   
+  if t >=  29825
+    x = 5;
+  endif
+  
   if(do_init_regression)
     ewls_regression = var_init_regression_vector(clear_signal, model_rank, t);
     do_init_regression = 0;
@@ -108,14 +112,12 @@ while(t <= N);
       printf("Model ustable on: %d.\n", t0);
 
       % Looks like it does more harm than good
-      %{
+      
       [cl_theta_l, cl_theta_r, qqx] = wwr_estimation3(...
          min([ewls_equivalent_window_length, t0]),...
           clear_signal(:,t0-(min([ewls_equivalent_window_length, t0-1])):t0));
       cl_theta = mround([cl_theta_l, cl_theta_r]);
-      %cl_noise_variance = mround(qqx./ewls_equivalent_window_length);
-      %cl_noise_variance = mround(qqx);
-      %}
+      cl_noise_variance = mround(qqx./ewls_equivalent_window_length);
     endif 
 
     % Set up initial conditions for Kalman closed loop detection
