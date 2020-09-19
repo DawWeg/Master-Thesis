@@ -5,22 +5,8 @@ clc;
 tic;
 
 % Add dependencies
-addpath("utilities");
-addpath("methods");
-addpath("00_data");
-addpath("01_identification");
-addpath("02_model_stability");
-addpath("03_detection");
-addpath("04_interpolation");
-addpath("05_testing");
-addpath("05_testing/utils");
-addpath("06_vector_extension");
-addpath("07_scalar");
-addpath("08_scalar_bidirectional");
-addpath("09_vector_bidirectional");
-addpath("10_bidirectional");
-addpath("audio_resto/octave_clicks");
-source("06_vector_extension/var_kalman.m");
+run("includes.m");
+
 % Set workspace parameters
 
 global output_directory="00_data/output_samples/";

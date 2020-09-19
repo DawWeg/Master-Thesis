@@ -48,19 +48,15 @@ function [ clear_signal,...
   if use_external_detection
     max_alarm_length = max_alarm_length*3;
   endif
+  
   skip_detection = 0;
-  unstable_model = 0;
   do_init_regression = 1;
-  regrssion_time = 0;
-  ewls_time = 0;
-  kalman_time = 0;
-  iter = 0;
 
 while(t <= N);
   print_progress("VAR Impulse noise reduction", t, N, N/100);
   
   if(do_init_regression)
-    ewls_regression = init_regression_vector(clear_signal, model_rank, t);
+    ewls_regression = var_init_regression_vector(clear_signal, model_rank, t);
     do_init_regression = 0;
   else
     ewls_regression = [clear_signal(:,t-1); ewls_regression(1:end-2)];
@@ -80,8 +76,7 @@ while(t <= N);
   % If model is in steady state (whole window is populated)
   % And number of samples marked by closed loop detection as cleared is zeros
   % Perform EWLS based detection
-  if (t > ewls_equivalent_window_length && skip_detection == 0)     
-
+  if (t > ewls_equivalent_window_length && skip_detection == 0)      
     if(use_external_detection)
       ewls_detection = detection(:,t);
     else
@@ -91,7 +86,6 @@ while(t <= N);
       detection(:, t) = ewls_detection;
     endif
     
-   
     variance(1, t) = ewls_noise_variance_current(1,1);
     variance(2, t) = ewls_noise_variance_current(2,2);
     error(:,t) = ewls_error_current;
@@ -103,46 +97,30 @@ while(t <= N);
   if ((ewls_detection(1) || ewls_detection(2)) && skip_detection == 0 )
     t0 = t-1;
     
+    cl_theta_l = mround(ewls_theta_previous(1:2*model_rank));
+    cl_theta_r = mround(ewls_theta_previous(2*model_rank+1:end));
+    cl_theta = mround([cl_theta_l, cl_theta_r]);
+    cl_noise_variance = mround(ewls_noise_variance_previous);
+    
     % Check model stability and in case it is unstable reestimate coefficients
     % using WWR algorithm
-    
     if(check_stability && (check_stability_var (ewls_theta_previous) == 0))
       printf("Model ustable on: %d.\n", t0);
 
       % Looks like it does more harm than good
-      %[cl_theta_l, cl_theta_r, qqx] = wwr_estimation3(...
-      %   min([ewls_equivalent_window_length, t0]),...
-      %    clear_signal(:,t0-(min([ewls_equivalent_window_length, t0-1])):t0));
-      
-      %noise_variance_kalman = mround(noise_variance_kalman);
-      %save('-binary','wwr3data.dat', ...
-      %  'theta_kalman', 'ewls_equivalent_window_length', 't0', 'clear_signal',...
-      %  'ewls_theta_previous', 'ewls_error_trajectory');
-      
-      %unstable_model++;
-      %cl_theta = mround([cl_theta_l, cl_theta_r]);
+      %{
+      [cl_theta_l, cl_theta_r, qqx] = wwr_estimation3(...
+         min([ewls_equivalent_window_length, t0]),...
+          clear_signal(:,t0-(min([ewls_equivalent_window_length, t0-1])):t0));
+      cl_theta = mround([cl_theta_l, cl_theta_r]);
       %cl_noise_variance = mround(qqx./ewls_equivalent_window_length);
-      
       %cl_noise_variance = mround(qqx);
-      %ewls_theta_previous = ...
-      %    wwr_estimation2(min([ewls_equivalent_window_length, t0]), ...
-      %    clear_signal(:,t0-(min([ewls_equivalent_window_length, t0]))+1:t0), ...
-      %    ewls_noise_variance_previous );
-      cl_theta_l = mround(ewls_theta_previous(1:2*model_rank));
-      cl_theta_r = mround(ewls_theta_previous(2*model_rank+1:end));
-      cl_theta = mround([cl_theta_l, cl_theta_r]);
-      cl_noise_variance = mround(ewls_noise_variance_previous);
-    else
-      
-      cl_theta_l = mround(ewls_theta_previous(1:2*model_rank));
-      cl_theta_r = mround(ewls_theta_previous(2*model_rank+1:end));
-      cl_theta = mround([cl_theta_l, cl_theta_r]);
-      cl_noise_variance = mround(ewls_noise_variance_previous);
+      %}
     endif 
 
     % Set up initial conditions for Kalman closed loop detection
     cl_covariance_matrix = zeros(2*model_rank, 2*model_rank);
-    cl_state_vector = init_regression_vector(clear_signal, model_rank, t0+1);
+    cl_state_vector = var_init_regression_vector(clear_signal, model_rank, t0+1);
     
     cl_threshold = zeros(2,1);
     tk = t0;
@@ -215,7 +193,7 @@ while(t <= N);
   endwhile
     
     % Retrieve interpolation from Kalman state vector
-    signal_reconstruction = retrieve_reconstruction(cl_state_vector);
+    signal_reconstruction = var_retrieve_reconstruction(cl_state_vector);
     
     if(!use_external_detection)
         % Check if there were any false alarms during detection
@@ -225,11 +203,11 @@ while(t <= N);
         % If false alarm was detected run Kalman algorithm again
         % but with defined detection signal
         if(false_alarm)
-           signal_reconstruction = var_kalman_interpolator( clear_signal,...
-                                                            detection,...
-                                                            t0, tk,...
-                                                            mround([cl_theta_l, cl_theta_r]),...
-                                                            cl_noise_variance );
+           signal_reconstruction = VAR_Interpolator( clear_signal,...
+                                                     detection,...
+                                                     t0, tk,...
+                                                     mround([cl_theta_l, cl_theta_r]),...
+                                                     cl_noise_variance );
         endif
     endif
 
