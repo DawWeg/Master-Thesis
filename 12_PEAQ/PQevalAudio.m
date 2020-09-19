@@ -27,8 +27,6 @@ PQopt.DelayOverlap = 1;
 PQopt.DataBounds = 1;
 PQopt.EndMin = NF / 2;
 
-addpath ('CB', 'MOV', 'Misc', 'Patt');
-
 if (nargin < 3)
     StartS = [0, 0];
 end
