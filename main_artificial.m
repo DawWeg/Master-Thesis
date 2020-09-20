@@ -58,7 +58,7 @@ for i=1:filenames_count
 
         
         % Prepare testing signal
-        seconds_start = 0; seconds_end = 0.3;
+        seconds_start = 0; seconds_end = -1;
         [input_signal, frequency] = load_audio(input_filename, seconds_start, seconds_end);
         [noisy_signal, frequency] = load_audio(['../noise/' input_filename], seconds_start, seconds_end);
         % Save input data for reporting and PEAQ (file is shortened from both sides - workaround for PEAQ error)
