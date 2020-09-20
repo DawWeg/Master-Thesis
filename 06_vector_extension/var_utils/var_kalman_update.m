@@ -36,6 +36,9 @@ function [ state_vector,...
    covariance_matrix(1:2,1:2) = zeros(2);
   elseif (detection(1) == 0 && detection(2) != 0)
     % Right not ok
+    if error_covariance(1,1) == 0
+      error_covariance(1,1) = 1e-12;
+    endif
     gain_vector  = (1/error_covariance(1,1))*(covariance_matrix(:,1));
 
     % For numerical error prevention -> force one
@@ -50,6 +53,9 @@ function [ state_vector,...
     covariance_matrix(1,1) = 0;  
   elseif (detection(1) != 0 && detection(2) == 0 )
     % Left not ok
+    if error_covariance(2,2) == 0
+      error_covariance(2,2) = 1e-12;
+    endif
     gain_vector   = (1/error_covariance(2,2))*(covariance_matrix(:,2));
 
     % For numerical error prevention -> force one
