@@ -89,7 +89,9 @@ while(t <= N);
       ewls_detection = abs(ewls_error_current) > ewls_threshold;
       detection(:, t) = ewls_detection;
     endif
-    
+  endif
+  
+  if skip_detection == 0
     variance(1, t) = ewls_noise_variance_current(1,1);
     variance(2, t) = ewls_noise_variance_current(2,2);
     error(:,t) = ewls_error_current;
