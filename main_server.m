@@ -6,21 +6,44 @@ org_input_directory = input_directory;
 
 do_peaq = 1;
 do_peaq_process = 1;
-do_peaq_analysis = 1;
+do_peaq_analysis = 0;
 
 do_normal = 0;
 do_normal_process = 1;
 execution_error_log = [];
 
+filenames_excludes = [ ...
+  "chopin_gavrilov_1.wav";...
+  "chopin_gavrilov_2.wav";...
+  "chopin_gavrilov_3.wav";...
+  "classical_1.wav";...
+  "clearday.wac";...
+  "energy.wav";...
+  "funnysong.wav";...
+  "guitar_1.wav";...
+  "guitar_2.wav";...
+  "hipjazz.wav";...
+  "inspire.wav";...
+  "theelevatorbossanova.wav";...
+  "thejazzpiano.wav";
+];
+exclude_length = size(filenames_excludes,1);
 if do_peaq
     input_directory = org_input_directory;
     input_directory = [input_directory, 'clear/' ];
     filenames = dir(input_directory);
+    
     for i=1:length(filenames)
             input_file = filenames(i);
             input_filename_with_extension = input_file.name; 
+            excluded = 0;
+            for k=1:exclude_length
+              if input_filename_with_extension == filenames_excludes(k,:)
+                excluded = 1;
+              endif
+            endfor
             [dir, name, ext] = fileparts(input_filename_with_extension);
-            if(isempty(name) || (name == '.') || (ext == '.txt'))
+            if(isempty(name) || (name == '.') || (ext == '.txt') || excluded)
                 continue;
             endif
             output_directory =  ["00_data/output_samples/server/" name "/"];
